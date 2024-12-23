@@ -1,77 +1,78 @@
+from commonFunctions import  midplaneTemp
+from dustpy import Simulation
+from dustpy import constants as c
+from dustpy import std
+import inputFile as pars
+import matplotlib.pyplot as plt
 import numpy as np
-from astropy import constants as c
-from inputFile import (
-    Mstar,Rstar,Tstar,rhop,alphaTurb,mu,alpha,sigmaExp,
-    a_0,Rin_dust,Redge_dust,Rnr_dust,tstart,tend,dt_dust,
-    vfrag,Rout,dustMinSize,dustMaxSize,allowDriftingParticles
-)
-from commonFunctions import (
-    midplaneTemp
-)
 from viscAccDisc import viscAccDisc_grid
 
 #####################################################
 
-mH = c.u.cgs.value
+mH = c.m_p
 Z = 0.01
 
 #####################################################
 
 # Set up semimajor axis and time grid
 
-ri = np.logspace(np.log10(Rin_dust),np.log10(Redge_dust),Rnr_dust)
-t = np.linspace(tstart,tend,int(np.floor(tend/dt_dust)))
+ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
+ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
+ri = np.concatenate([ri, ri_outer])
+t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
 
 #####################################################
 
-import dustpy
-from dustpy import hdf5writer
-wrtr = hdf5writer()
 
 ### Initialize dustPy
-sim = dustpy.Simulation()
-### Stellar Parameters
-sim.ini.star.M = Mstar
-sim.ini.star.R = Rstar
-sim.ini.star.T = Tstar
+sim = Simulation()
+
 ### Grid Configuration
+sim.ini.dust.rhoMonomer = pars.rhop
 sim.ini.grid.Nmbpd = 7 # Default
-sim.ini.grid.mmin = 4./3. * np.pi * sim.ini.dust.rhoMonomer * dustMinSize**3
-sim.ini.grid.mmax = 4./3. * np.pi * sim.ini.dust.rhoMonomer * dustMaxSize**3
-sim.ini.grid.Nr = Rnr_dust
-sim.ini.grid.rmin = Rin_dust
-sim.ini.grid.rmax = Redge_dust
+sim.ini.grid.mmin = 4./3. * np.pi * sim.ini.dust.rhoMonomer * pars.dustMinSize**3
+sim.ini.grid.mmax = 4./3. * np.pi * sim.ini.dust.rhoMonomer * pars.dustMaxSize**3
+sim.grid.ri = ri
+sim.makegrids()
+### Stellar Parameters
+sim.ini.star.M = pars.Mstar
+sim.ini.star.R = pars.Rstar
+sim.ini.star.T = pars.Tstar
 # Gas Parameters
-sim.ini.gas.alpha = alpha
+sim.ini.gas.alpha = pars.alpha
 sim.ini.gas.gamma = 1.0 # Adiabatic index, set to 1 for isothermal
-sim.ini.gas.mu = mu*mH
-sim.ini.gas.SigmaExp = -sigmaExp
-sim.ini.gas.SigmaRc = Rout
+sim.ini.gas.mu = pars.mu*mH
+sim.ini.gas.SigmaExp = -pars.sigmaExp
+sim.ini.gas.SigmaRc = pars.Rout
 ### Dust Parameters
-sim.ini.dust.aIniMax = a_0
-sim.ini.dust.allowDriftingParticles = allowDriftingParticles
+sim.ini.dust.aIniMax = pars.a_0
+sim.ini.dust.allowDriftingParticles = pars.allowDriftingParticles
 sim.ini.dust.d2gRatio = Z
-sim.ini.dust.rhoMonomer = rhop
-sim.ini.dust.vfrag = vfrag
+sim.ini.dust.vfrag = pars.vfrag
 ### Initialize
 sim.initialize()
+### Different dust diffusivity
+sim.dust.delta.rad[...] = pars.alphaTurb
+sim.dust.delta.rad.updater = None
+sim.dust.delta.turb[...] = pars.alphaTurb
+sim.dust.delta.turb.updater = None
+sim.dust.delta.vert[...] = pars.alphaTurb
+sim.dust.delta.vert.updater = None
+sim.dust.update()
 ### Set the initial surface densities and temperature structure
-Sigma_old = sim.gas.Sigma.copy()
-Mdot_gas_0,sigma_gas_0 = viscAccDisc_grid(t[0],sim.grid.r)
-sim.gas.Sigma = sigma_gas_0
-sim.dust.Sigma *= (sim.gas.Sigma/Sigma_old)[:,None]
-sim.gas.gamma = 1.0 # Adiabatic index, set to 1 for isothermal
-sim.gas.T = midplaneTemp(sim.grid.r)
+sim.gas.T[...] = midplaneTemp(sim.grid.r)
 sim.gas.T.updater = None
+sim.gas.update()
+Mdot_gas_0, sigma_gas_0 = viscAccDisc_grid(t[0], sim.grid.r)
+sim.gas.Sigma[...] = sigma_gas_0
+sim.gas.update()
+sim.dust.Sigma[...] = std.dust.MRN_distribution(sim)
+sim.dust.update()
+### Update and finalize all fields
+sim.update()
+sim.integrator._finalize()
 ### Time between saved snapshots
 sim.t.snapshots = t
-### Different dust diffusivity
-sim.dust.delta.rad = alphaTurb
-sim.dust.delta.rad.updater = None
-sim.dust.delta.turb = alphaTurb
-sim.dust.delta.turb.updater = None
-sim.dust.delta.vert = alphaTurb
-sim.dust.delta.vert.updater = None
 ### Lots of things that are not saved
 sim.dust.kernel.save = False
 sim.dust.v.rel.azi.save = False
