@@ -1,11 +1,7 @@
 import sys
 import numpy as np
 from astropy import constants as c
-from inputFile import (
-    Mstar,Rstar,Tstar,rhop,alphaTurb,mu,alpha,
-    Rin_dust,Redge_dust,Rnr_dust,tstart,tend,dt_dust,
-    vfrag
-)
+import inputFile as pars
 from commonFunctions import (
     midplaneTemp
 )
@@ -24,27 +20,29 @@ Z = 0.01
 
 # Set up semimajor axis and time grid
 
-ri = np.logspace(np.log10(Rin_dust),np.log10(Redge_dust),Rnr_dust)
-t = np.linspace(tstart,tend,int(np.floor(tend/dt_dust)))
+ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
+ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
+ri = np.concatenate([ri, ri_outer])
+t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
 
 #####################################################
 
 # Initialize twopoppy2
 m = tp2.Twopoppy(grid=tp2.Grid(ri))
-m.M_star = Mstar
-m.R_star = Rstar
-m.T_star = Tstar
+m.M_star = pars.Mstar
+m.R_star = pars.Rstar
+m.T_star = pars.Tstar
 m.T_gas = midplaneTemp(m.r)
-m.alpha_diff=alphaTurb
-m.alpha_gas=alpha
-m.alpha_turb=alphaTurb
-m.mu = mu
-m.rho_s = rhop
+m.alpha_diff=pars.alphaTurb
+m.alpha_gas=pars.alpha
+m.alpha_turb=pars.alphaTurb
+m.mu = pars.mu
+m.rho_s = pars.rhop
 Mdot_gas_0,sigma_gas_0 = viscAccDisc_grid(t[0],m.r)
 m.sigma_g = sigma_gas_0
 m.sigma_d = Z * sigma_gas_0
 m.snapshots = t
-m.v_frag = vfrag
+m.v_frag = pars.vfrag
 m.initialize()
 
 # Run twopoppy2

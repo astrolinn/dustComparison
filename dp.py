@@ -1,6 +1,6 @@
 from commonFunctions import  midplaneTemp
 from dustpy import Simulation
-from dustpy import constants as c
+from astropy import constants as c
 from dustpy import std
 import inputFile as pars
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ from viscAccDisc import viscAccDisc_grid
 
 #####################################################
 
-mH = c.m_p
+mH = c.u.cgs.value
 Z = 0.01
 
 #####################################################
