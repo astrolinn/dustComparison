@@ -1,16 +1,15 @@
-from commonFunctions import  midplaneTemp
-from dustpy import Simulation
-from astropy import constants as c
-from dustpy import std
-import inputFile as pars
-import matplotlib.pyplot as plt
 import numpy as np
+from astropy import constants as c
+from dustpy import Simulation
+from dustpy import std
+
+import inputFile as pars
+from commonFunctions import  midplaneTemp
 from viscAccDisc import viscAccDisc_grid
 
 #####################################################
 
 mH = c.u.cgs.value
-Z = 0.01
 
 #####################################################
 
@@ -22,7 +21,6 @@ ri = np.concatenate([ri, ri_outer])
 t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
 
 #####################################################
-
 
 ### Initialize dustPy
 sim = Simulation()
@@ -47,7 +45,7 @@ sim.ini.gas.SigmaRc = pars.Rout
 ### Dust Parameters
 sim.ini.dust.aIniMax = pars.a_0
 sim.ini.dust.allowDriftingParticles = pars.allowDriftingParticles
-sim.ini.dust.d2gRatio = Z
+sim.ini.dust.d2gRatio = pars.Z
 sim.ini.dust.vfrag = pars.vfrag
 ### Initialize
 sim.initialize()
