@@ -52,3 +52,13 @@ def gasScaleHeight(Cs,Omega):
 def viscosity(Omega,H):
     nu = pars.alpha*Omega*H**2
     return nu
+
+# Stokes number
+
+def st_number(r,temp,sigmaGas,size):
+    Omega = (G*pars.Mstar/r**3)**(1/2)
+    Cs = (kB*temp/(pars.mu*mH))**(1/2)
+    Hg = Cs/Omega[None,:]
+    rho_2D = sigmaGas/(np.sqrt(2*np.pi)*Hg)
+    st_2D = size*pars.rhop/(Hg*rho_2D)
+    return st_2D
