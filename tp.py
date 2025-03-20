@@ -1,20 +1,22 @@
-import sys
+import os
 import numpy as np
 from astropy import constants as c
+from twopoppy2 import twopoppy2 as tp2
+
 import inputFile as pars
 from commonFunctions import (
     midplaneTemp
 )
 from viscAccDisc import viscAccDisc_grid
 
-#### CHANGE THIS TO YOUR PATH ###
-sys.path.append('/nobackup/leerikss/twopoppy2')
-from twopoppy2 import twopoppy2 as tp2
+path = "files_tp"
+exists = os.path.exists(path)
+if not exists:
+    os.mkdir(path)
 
 #####################################################
 
 mH = c.u.cgs.value
-Z = 0.01
 
 #####################################################
 
@@ -40,9 +42,13 @@ m.mu = pars.mu
 m.rho_s = pars.rhop
 Mdot_gas_0,sigma_gas_0 = viscAccDisc_grid(t[0],m.r)
 m.sigma_g = sigma_gas_0
-m.sigma_d = Z * sigma_gas_0
-m.snapshots = t
+m.allowDriftingParticles = pars.allowDriftingParticles
+m._a_0 = pars.dustMinSize
+m._a_1 = pars.a_0 # Initial size (bad name choice...)
+m._floor = 1e-25
+m.sigma_d = pars.Z * sigma_gas_0
 m.v_frag = pars.vfrag
+m.snapshots = t
 m.initialize()
 
 # Run twopoppy2
@@ -51,13 +57,15 @@ m.run()
 # Get results
 r = m.r
 time = m.data['time'][:,0]
+temp = m.data['T_gas']
 sigma_gas = m.data['sigma_g']
 sigma_dust = m.data['sigma_d']
 size = m.data['a_1']
 
 # Save data arrays
-np.save('r_tp.npy',m.r)
-np.save('time_tp.npy',time)
-np.save('sigma_gas_tp.npy',sigma_gas)
-np.save('sigma_dust_tp.npy',sigma_dust)
-np.save('size_tp.npy',size)
+np.save('files_tp/r_tp.npy',m.r)
+np.save('files_tp/time_tp.npy',time)
+np.save('files_tp/temp_tp.npy',temp)
+np.save('files_tp/sigma_gas_tp.npy',sigma_gas)
+np.save('files_tp/sigma_dust_tp.npy',sigma_dust)
+np.save('files_tp/size_tp.npy',size)
