@@ -2,6 +2,7 @@
 ######################################################
 
 import numpy as np
+from scipy.interpolate import interp1d
 from astropy import constants as c
 import inputFile as pars
 
@@ -26,6 +27,10 @@ def kepAngVel(r):
 # Midplane temperature
 
 def midplaneTemp(r):
+    """
+    Calculates the radial midplane temperature structure
+    Two options, decided in inputFile
+    """
     if pars.tempProfile == "CG97":
         T = pars.Tconst * (r/au)**(-pars.tempExp)
     elif pars.tempProfile == "passIrr":
@@ -50,15 +55,62 @@ def gasScaleHeight(Cs,Omega):
 # Viscosity
 
 def viscosity(Omega,H):
+    """
+    Calculates the Shakura & Sunyaev viscosity
+    """
     nu = pars.alpha*Omega*H**2
     return nu
 
 # Stokes number
 
 def st_number(r,temp,sigmaGas,size):
-    Omega = (G*pars.Mstar/r**3)**(1/2)
-    Cs = (kB*temp/(pars.mu*mH))**(1/2)
-    Hg = Cs/Omega[None,:]
+    """
+    Calculates the Stokes number along the entire
+    time and semimajor axis grid
+    """
+    Omega = kepAngVel(r)
+    Cs = soundSpeed(temp)
+    Hg = gasScaleHeight(Cs, Omega)
     rho_2D = sigmaGas/(np.sqrt(2*np.pi)*Hg)
     st_2D = size*pars.rhop/(Hg*rho_2D)
     return st_2D
+
+# Pressure gradient
+
+def calc_dlnPdlnr(r, temp, sigma_gas):
+    """
+    Calculates the radial pressure gradient along the
+    entire time and semimajor axis grid
+    """
+    Omega = kepAngVel(r)
+    Cs = soundSpeed(temp)
+    H = gasScaleHeight(Cs, Omega)
+    dlnsigma_gasdlnr = np.gradient(np.log(sigma_gas), axis=1) / np.gradient(np.log(r))
+    dlntempdlnr = np.gradient(np.log(temp), axis=1) / np.gradient(np.log(r))
+    dlnHdlnr = np.gradient(np.log(H), axis=1) / np.gradient(np.log(r))
+    dlnPdlnr = dlnsigma_gasdlnr + dlntempdlnr - dlnHdlnr
+    return dlnPdlnr
+
+# Pebble scale height (assumes monodisperse St)
+
+def pebbleScaleHeight(r, temp, St):
+    Omega = kepAngVel(r)
+    Cs = soundSpeed(temp)
+    H = gasScaleHeight(Cs, Omega)
+    return H * np.sqrt(pars.alphaTurb/(pars.alphaTurb+St))
+
+# Midplane density
+
+def midplaneDensity(sigma, H):
+    return sigma / (np.sqrt(2*np.pi) * H)
+
+# Time interpolation
+
+def interp_t(tnew, told, array_old):
+    """
+    Performs linear interpolation along axis=0 to obtain
+    an array onto a new time-array
+    """
+    array_new = interp1d(told, array_old, kind='linear', axis=0, fill_value='extrapolate')(tnew)
+    return array_new
+
