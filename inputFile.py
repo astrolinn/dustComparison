@@ -18,14 +18,14 @@ tend = 3e6*year     # End point of time-grid, also end of planet formation
 dt_dust = 3e3*year  # Frequency at which outputs are saved from dust evolution
 
 # Stellar parameters
-Mstar= 1.0 * c.M_sun.cgs.value
-Rstar  = 3.096 * c.R_sun.cgs.value
+Mstar= 1.0*c.M_sun.cgs.value
+Rstar  = 3.096*c.R_sun.cgs.value
 Tstar = 4397
 
 # Protoplanetary disk parameters
-Mdot0 = 1.0e-8 * Msolar/year
+Mdot0 = 1.0e-8*Msolar/year
                     # Initial disk accretion rate (determines initial
-                    # Gas surface density)
+                    # gas surface density)
 Rout = 50.0*au      # Critical cut-off radius of surface density
 Z = 0.01
 tempProfile = "passIrr"
@@ -52,3 +52,14 @@ Rgrid_out = 1000*au # Outer edge of grid
 a_0 = 1.0e-4        # Initial size of dust grains
 vfrag = 100.0       # Fragmentation velocity
 rhop = 1.0          # Internal density of dust grains
+
+# Pebble accretion parameters
+Mcore = 0.1*ME      # Initial core mass
+Rcore = 5*au        # Semimajor axis of core
+tcore = 1e5*year    # Time of core formation, start of pebble accretion
+dt_pebbAcc = 5e2*year
+                    # Time-step used in planet growth calculation
+fracmax_pebbAcc = 0.999   
+                    # Remove high end of St tail in pebble accretion
+lim3d_pebbAcc = 10  # If (Racc/(2*Hp))**2 > lim3d, switch to using the
+                    # original eq for pebble accretion in the 3d limit
