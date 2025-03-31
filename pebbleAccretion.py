@@ -8,6 +8,7 @@
 #   - Density-weighted average
 #   - Peak of density-vs-St distribution
 
+import os
 import numpy as np
 from scipy.special import i0,i1
 import matplotlib.pyplot as plt
@@ -26,6 +27,11 @@ kB = c.k_B.cgs.value
 mH = c.u.cgs.value
 G = c.G.cgs.value
 ME = c.M_earth.cgs.value
+
+path = "pebbledata"
+exists = os.path.exists(path)
+if not exists:
+    os.mkdir(path)
 
 ################################
 ### Load dust evolution data ###
@@ -104,7 +110,7 @@ def pebbAccRate_mono(a, temp, m, St, sigma_dust, rho_dust, dlnPdlnr):
     rH = (m / (3 * pars.Mstar))**(1/3) * a
     tp = c.G.cgs.value * m / (Deltav + Omega * rH)**3
     Mt = Deltav**3 / (c.G.cgs.value * Omega)
-    Hd = H * np.sqrt(pars.alphaTurb / (pars.alphaTurb + St))
+    Hd = pebbleScaleHeight(a, temp, St)
     tau_f = St / Omega
     M_HB = Mt / (8 * St)
     if (m < M_HB):
@@ -152,7 +158,7 @@ def pebbAccRate_poly(a, temp, m, St_poly, sigma_dust_poly, rho_dust_poly, dlnPdl
     indmax = np.argmax(np.where(np.cumsum(rho_dust_poly, -1) / np.sum(rho_dust_poly, -1) < pars.fracmax_pebbAcc, St_poly, 0.0)) + 1
     Mdot_core = np.zeros((indmax))
     for i in range(indmax):
-        Hd = H * np.sqrt(pars.alphaTurb / (pars.alphaTurb + St_poly[i]))
+        Hd = pebbleScaleHeight(a, temp, St_poly[i])
         tau_f = St_poly[i] / Omega
         M_HB = Mt / (8 * St_poly[i])
         if (m < M_HB):
@@ -250,5 +256,13 @@ plt.xlabel('Time [Myr]')
 plt.ylabel('Planetary mass [Mearth]')
 plt.show()
 
+###################################
+### Save planetary growth track ###
 
+np.save('pebbledata/tpebble.npy',t)
+np.save('pebbledata/mp_tp2.npy',m_tp2)
+np.save('pebbledata/tpebble.npy',t)
+np.save('pebbledata/mp_dp_poly.npy',m_dp_poly)
+np.save('pebbledata/mp_dp_mono_aver.npy',m_dp_mono_aver)
+np.save('pebbledata/mp_dp_mono_peak.npy',m_dp_mono_peak)
 
