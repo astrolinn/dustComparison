@@ -139,6 +139,11 @@ plt.show()
 #################
 ### Save data ###
 
+np.save('planetesimaldata/t_tp2.npy',t_tp2)
+np.save('planetesimaldata/r_tp2.npy',r_tp2)
+np.save('planetesimaldata/t_dp.npy',t_dp)
+np.save('planetesimaldata/r_dp.npy',r_dp)
+
 np.save('planetesimaldata/pf_tp2_SI24.npy',pf_tp2_SI24)
 np.save('planetesimaldata/pf_dp_aver_SI24.npy',pf_dp_aver_SI24)
 np.save('planetesimaldata/pf_dp_peak_SI24.npy',pf_dp_peak_SI24)
