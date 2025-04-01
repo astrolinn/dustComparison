@@ -10,6 +10,7 @@
 # - Lim et al. (2024a)
 # - Lim et al. (2024b)
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
@@ -24,6 +25,11 @@ au = c.au.cgs.value
 kB = c.k_B.cgs.value
 mH = c.u.cgs.value
 G = c.G.cgs.value
+
+path = "planetesimaldata"
+exists = os.path.exists(path)
+if not exists:
+    os.mkdir(path)
 
 ################################
 ### Load dust evolution data ###
@@ -129,4 +135,14 @@ plt.title('Planetesimal formation regions')
 plt.xlim([1,200])
 plt.ylim([0,3])
 plt.show()
+
+#################
+### Save data ###
+
+np.save('planetesimaldata/pf_tp2_SI24.npy',pf_tp2_SI24)
+np.save('planetesimaldata/pf_dp_aver_SI24.npy',pf_dp_aver_SI24)
+np.save('planetesimaldata/pf_dp_peak_SI24.npy',pf_dp_peak_SI24)
+np.save('planetesimaldata/pf_tp2_SI25.npy',pf_tp2_SI25)
+np.save('planetesimaldata/pf_dp_aver_SI25.npy',pf_dp_aver_SI25)
+np.save('planetesimaldata/pf_dp_peak_SI25.npy',pf_dp_peak_SI25)
 
