@@ -227,8 +227,9 @@ def pebbAcc(t, tdustev, St, sigma_dust, rho_dust, rdustev, temp, sigma_gas):
 ### Compute the growth of a planet via pebble accretion ###
 
 # Set up time-array for pebble accretion
-num_points = int((pars.tend - pars.tcore) / pars.dt_pebbAcc) + 1
-t = np.linspace(pars.tcore, pars.tend, num_points)
+end_time = min(pars.tend, t_tp2[-1], t_dp[-1])
+num_points = int((end_time - pars.tcore) / pars.dt_pebbAcc) + 1
+t = np.linspace(pars.tcore, end_time, num_points)
 
 # TwoPopPy2
 m_tp2 = pebbAcc(t, t_tp2, st_2D_tp2, sigma_d_2D_tp2, rho_d_2D_tp2, r_tp2, temp_2D_tp2, sigma_g_2D_tp2)
@@ -259,10 +260,24 @@ plt.show()
 ###################################
 ### Save planetary growth track ###
 
+dist = pars.Rcore/au
+
 np.save('pebbledata/tpebble.npy',t)
-np.save('pebbledata/mp_tp2.npy',m_tp2)
-np.save('pebbledata/tpebble.npy',t)
-np.save('pebbledata/mp_dp_poly.npy',m_dp_poly)
-np.save('pebbledata/mp_dp_mono_aver.npy',m_dp_mono_aver)
-np.save('pebbledata/mp_dp_mono_peak.npy',m_dp_mono_peak)
+np.save(f'pebbledata/mp_tp2_{dist:.1f}au.npy',m_tp2)
+np.save(f'pebbledata/mp_dp_poly_{dist:.1f}au.npy',m_dp_poly)
+np.save(f'pebbledata/mp_dp_mono_aver_{dist:.1f}au.npy',m_dp_mono_aver)
+np.save(f'pebbledata/mp_dp_mono_peak_{dist:.1f}au.npy',m_dp_mono_peak)
+
+### Save some extra data ###
+
+ir = np.abs(r_tp2 - pars.Rcore).argmin()
+np.save('pebbledata/t_tp2.npy',t_tp2)
+np.save(f'pebbledata/st_tp2_{dist:.1f}au.npy',st_2D_tp2[:,ir])
+np.save(f'pebbledata/sigma_d_tp2_{dist:.1f}au.npy',sigma_d_2D_tp2[:,ir])
+
+ir = np.abs(r_dp - pars.Rcore).argmin()
+np.save('pebbledata/t_dp.npy',t_dp)
+np.save(f'pebbledata/st_peak_{dist:.1f}au.npy',st_2D_dp_peak[:,ir])
+np.save(f'pebbledata/st_aver_{dist:.1f}au.npy',st_2D_dp_aver[:,ir])
+np.save(f'pebbledata/sigma_d_dp_{dist:.1f}au.npy',sigma_d_2D_dp[:,ir])
 
