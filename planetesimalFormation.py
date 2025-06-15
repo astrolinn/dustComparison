@@ -114,19 +114,19 @@ pf_dp_peak_SI25 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2025(st_2D_dp_peak
 ### Plot ###
 
 # Contour lines 
-plt.contour(r_tp2/au, t_tp2/(1e6*year), pf_tp2_SI25, levels=[0], colors='black', linewidths=1.2)
-plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_aver_SI25, levels=[0], colors='black', linewidths=1.2, linestyles='dashed')
-plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_peak_SI25, levels=[0], colors='black', linewidths=1.4, linestyles='dotted')
-plt.contour(r_tp2/au, t_tp2/(1e6*year), pf_tp2_SI24, levels=[0], colors='red', linewidths=1.2)
-plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_aver_SI24, levels=[0], colors='red', linewidths=1.2, linestyles='dashed')
-plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_peak_SI24, levels=[0], colors='red', linewidths=1.4, linestyles='dotted')
+plt.contour(r_tp2/au, t_tp2/(1e6*year), pf_tp2_SI25, levels=[0], colors='black', linewidths=1.4)
+plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_aver_SI25, levels=[0], colors='red', linewidths=1.4)
+plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_peak_SI25, levels=[0], colors='green', linewidths=1.4)
+plt.contour(r_tp2/au, t_tp2/(1e6*year), pf_tp2_SI24, levels=[0], colors='black', linewidths=0.7)
+plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_aver_SI24, levels=[0], colors='red', linewidths=0.7)
+plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_peak_SI24, levels=[0], colors='green', linewidths=0.7)
 # Create proxy artists
-line1 = mlines.Line2D([], [], color='black', linewidth=1.2, label='tp2-SI25')
-line2 = mlines.Line2D([], [], color='black', linewidth=1.2, linestyle='dashed', label='dp-aver-SI25')
-line3 = mlines.Line2D([], [], color='black', linewidth=1.4, linestyle='dotted', label='dp-peak-SI25')
-line4 = mlines.Line2D([], [], color='red', linewidth=1.2, label='tp2-SI24')
-line5 = mlines.Line2D([], [], color='red', linewidth=1.2, linestyle='dashed', label='dp-aver-SI24')
-line6 = mlines.Line2D([], [], color='red', linewidth=1.4, linestyle='dotted', label='dp-aver-SI24')
+line1 = mlines.Line2D([], [], color='black', linewidth=1.4, label='tp2-SI25')
+line2 = mlines.Line2D([], [], color='red', linewidth=1.4, label='dp-aver-SI25')
+line3 = mlines.Line2D([], [], color='green', linewidth=1.4, label='dp-peak-SI25')
+line4 = mlines.Line2D([], [], color='black', linewidth=0.7, label='tp2-SI24')
+line5 = mlines.Line2D([], [], color='red', linewidth=0.7, label='dp-aver-SI24')
+line6 = mlines.Line2D([], [], color='green', linewidth=0.7, label='dp-aver-SI24')
 # Text
 plt.legend(handles=[line1, line2, line3, line4, line5, line6], frameon=False, fontsize=11)
 plt.xlabel('Semimajor axis [au]')
@@ -134,7 +134,7 @@ plt.ylabel('Time [Myr]')
 plt.title('Planetesimal formation regions')
 plt.xlim([1,200])
 plt.ylim([0,3])
-plt.show()
+#plt.show()
 
 #################
 ### Save data ###
@@ -151,3 +151,21 @@ np.save('planetesimaldata/pf_tp2_SI25.npy',pf_tp2_SI25)
 np.save('planetesimaldata/pf_dp_aver_SI25.npy',pf_dp_aver_SI25)
 np.save('planetesimaldata/pf_dp_peak_SI25.npy',pf_dp_peak_SI25)
 
+#######################
+### Save extra data ###
+
+np.save('planetesimaldata/st_tp2.npy',st_2D_tp2)
+np.save('planetesimaldata/st_aver.npy',st_2D_dp_aver)
+np.save('planetesimaldata/st_peak.npy',st_2D_dp_peak)
+
+np.save('planetesimaldata/Z_tp2.npy',sigma_d_2D_tp2/sigma_g_2D_tp2)
+np.save('planetesimaldata/Z_dp.npy',sigma_d_2D_dp/sigma_g_2D_dp)
+
+np.save('planetesimaldata/Zdiff_tp2_SI24.npy', sigma_d_2D_tp2/sigma_g_2D_tp2 - SI_Lim2024(st_2D_tp2, pars.alphaTurb))
+np.save('planetesimaldata/Zdiff_tp2_SI25.npy', sigma_d_2D_tp2/sigma_g_2D_tp2 - SI_Lim2025(st_2D_tp2))
+
+np.save('planetesimaldata/Zdiff_dp_aver_SI24.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2024(st_2D_dp_aver, pars.alphaTurb))
+np.save('planetesimaldata/Zdiff_dp_aver_SI25.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2025(st_2D_dp_aver))
+
+np.save('planetesimaldata/Zdiff_dp_peak_SI24.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2024(st_2D_dp_peak, pars.alphaTurb))
+np.save('planetesimaldata/Zdiff_dp_peak_SI25.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2025(st_2D_dp_peak))
