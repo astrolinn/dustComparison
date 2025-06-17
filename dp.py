@@ -27,7 +27,7 @@ sim = Simulation()
 
 ### Grid Configuration
 sim.ini.dust.rhoMonomer = pars.rhop
-sim.ini.grid.Nmbpd = 7 # Default
+sim.ini.grid.Nmbpd = pars.Nmbpd 
 sim.ini.grid.mmin = 4./3. * np.pi * sim.ini.dust.rhoMonomer * pars.dustMinSize**3
 sim.ini.grid.mmax = 4./3. * np.pi * sim.ini.dust.rhoMonomer * pars.dustMaxSize**3
 sim.grid.ri = ri
