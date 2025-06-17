@@ -1,12 +1,21 @@
 import numpy as np
 from astropy import constants as c
+import os
 import dustpy
 import tripod
 from tripod import std
+from tripod import hdf5writer
+from tripod.utils.size_distribution import get_q
+wrtr = hdf5writer()
 
 import inputFile as pars
 from commonFunctions import  midplaneTemp
 from viscAccDisc import viscAccDisc_grid
+
+path = "files_trpd"
+exists = os.path.exists(path)
+if not exists:
+    os.mkdir(path)
 
 #####################################################
 
@@ -72,3 +81,65 @@ sim.writer.overwrite = True
 ### Run TriPod
 sim.update()
 sim.run()
+
+#####################################################
+
+### Save the data ###
+
+# Standard output
+data = wrtr.read.all()
+np.save('files_trpd/r_trpd.npy',data.grid.r[0,:])
+np.save('files_trpd/t_trpd.npy',data.t)
+np.save('files_trpd/sigma_gas_2D.npy',data.gas.Sigma)
+np.save('files_trpd/sigma_dust_3D.npy',data.dust.Sigma)
+np.save('files_trpd/st_3D.npy',data.dust.St) 
+np.save('files_trpd/size_3D.npy',data.dust.a)
+np.save('files_trpd/temp_2D.npy',data.gas.T)
+np.save('files_trpd/rho_gas_2D.npy',data.gas.rho)
+np.save('files_trpd/rho_dust_3D.npy',data.dust.rho)
+np.save('files_trpd/vrad_dust_3D.npy',data.dust.v.rad)
+np.save('files_trpd/vrad_dust_3D.npy',data.dust.v.rad)
+
+# Reconstruct the size distribution in exactly the same was as DustPy
+log_mmin = np.log10(4./3. * np.pi * pars.rhop * pars.dustMinSize**3)
+log_mmax = np.log10(4./3. * np.pi * pars.rhop * pars.dustMaxSize**3)
+decades = np.ceil(log_mmax - log_mmin)
+Nm = int(decades * pars.Nmbpd) + 1
+m = np.logspace(log_mmin, log_mmax, num=Nm, base=10)
+a = (m/(4./3. * np.pi * pars.rhop))**(1/3)
+
+q = get_q(data.dust.Sigma, data.dust.s.min, data.dust.s.max)
+Sigma_recon = np.where(a[None,None,:]<data.dust.s.max[:,:,None], a[None,None,:]**(-q[:,:,None]+4), 0)
+Sigma_recon *= (data.dust.Sigma.sum(-1)/Sigma_recon.sum(-1))[:,:,None]
+
+a_3d = np.ones_like(data.gas.mfp)[..., None] * a
+condition = a_3d < 2.25 * data.gas.mfp[:,:,None]
+St_recon = np.empty_like(a_3d)
+Sigma_3d = np.broadcast_to(data.gas.Sigma[:, :, None], a_3d.shape)
+mfp_3d   = np.broadcast_to(data.gas.mfp[:, :, None], a_3d.shape)
+St_recon[condition] = 0.5 * np.pi * a_3d[condition] * pars.rhop / Sigma_3d[condition]
+St_recon[~condition] = 2.0/9.0 * np.pi * a_3d[~condition]**2 * pars.rhop / (mfp_3d[~condition] * Sigma_3d[~condition])
+
+H_recon = data.gas.Hp[:,:,None] / np.sqrt(1.0 + St_recon / data.dust.delta.vert[:,:,None])
+rho_recon = Sigma_recon / (np.sqrt(2 * np.pi) * H_recon)
+
+np.save('files_trpd/Sigma_recon.npy', Sigma_recon)
+np.save('files_trpd/St_recon.npy', St_recon)
+np.save('files_trpd/rho_recon.npy', rho_recon)
+
+'''
+#####################################################
+# Some reconstruction of the size distribution with provided functions
+from tripod.utils.read_data import read_data
+data_1 = read_data(data="data", Na=100)
+Sigma_recon_1 = data_1.dust.Sigma_recon
+St_recon_1 = data_1.dust.St_recon
+H_recon_1 = data.gas.Hp[:,:,None] / np.sqrt(1.0 + St_recon_1 / data.dust.delta.vert[:,:,None])
+rho_recon_1 = Sigma_recon_1 / (np.sqrt(2 * np.pi) * H_recon_1)
+
+np.save('files_trpd/Sigma_recon_1.npy', Sigma_recon_1)
+np.save('files_trpd/St_recon_1.npy', St_recon_1)
+np.save('files_trpd/rho_recon_1.npy', rho_recon_1)
+#####################################################
+'''
+
