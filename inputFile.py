@@ -44,6 +44,7 @@ dustMinSize = 5e-6  # Minimum dust size on dust-grid in dustPy
 dustMaxSize = 10    # Maximum dust size on dust-grid in dustPy
 allowDriftingParticles = True
                     # Do or don't allow initially drifting particles in dustpy
+Nmbpd = 7           # Number of dust fluids per decade in dustpy
 Rin_dust = 1.0*au   # Inner edge of semimajor axis grid used for dust ev.
 Redge_dust = 200*au # Outer edge of semimajor axis grid used for dust ev.
 Rnr_dust = 150      # Nr of grid-points on semimajor axis grid used for dust ev.
