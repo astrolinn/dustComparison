@@ -55,16 +55,29 @@ sigma_g_2D_tp2=np.load('files_tp/sigma_gas_tp.npy')
 sigma_d_2D_tp2=np.load('files_tp/sigma_dust_tp.npy')
 size_2D_tp2=np.load('files_tp/size_tp.npy')
 
+# TriPod
+r_trpd=np.load('files_trpd/r_trpd.npy')
+t_trpd=np.load('files_trpd/t_trpd.npy')
+temp_2D_trpd=np.load('files_trpd/temp_2D.npy')
+sigma_g_2D_trpd=np.load('files_trpd/sigma_gas_2D.npy')
+rho_d_3D_trpd=np.load('files_trpd/rho_recon.npy')
+rho_d_2D_trpd = rho_d_3D_trpd.sum(-1)
+sigma_d_3D_trpd=np.load('files_trpd/Sigma_recon.npy')
+sigma_d_2D_trpd = sigma_d_3D_trpd.sum(-1)
+st_3D_trpd=np.load('files_trpd/St_recon.npy')
+st_2D_trpd_peak=np.load('files_trpd/st_3D.npy')[:,:,-1]
+
 ####################
 ### Calculate St ###
 
 # Convert size to St for TwoPopPy2
 st_2D_tp2 = st_number(r_tp2,temp_2D_tp2,sigma_g_2D_tp2,size_2D_tp2)
 
-# Obtain representative St for DustPy
+# Obtain representative St for DustPy and tripod
 
 # Density-weighted average
 st_2D_dp_aver = np.sum(st_3D_dp * sigma_d_3D_dp, axis=2) / np.sum(sigma_d_3D_dp, axis=2)
+st_2D_trpd_aver = np.sum(st_3D_trpd * sigma_d_3D_trpd, axis=2) / np.sum(sigma_d_3D_trpd, axis=2)
 # Peak of size distribution
 ind = np.argmax(sigma_d_3D_dp, axis=2)
 st_2D_dp_peak = np.take_along_axis(st_3D_dp, ind[..., np.newaxis], axis=2).squeeze(axis=2)
@@ -244,6 +257,16 @@ m_dp_mono_aver = pebbAcc(t, t_dp, st_2D_dp_aver, sigma_d_2D_dp, rho_d_2D_dp, r_d
 # DustPy monodisperse - peak St
 m_dp_mono_peak = pebbAcc(t, t_dp, st_2D_dp_peak, sigma_d_2D_dp, rho_d_2D_dp, r_dp, temp_2D_dp, sigma_g_2D_dp)
 
+# TriPod polydisperse
+m_trpd_poly = pebbAcc(t, t_trpd, st_3D_trpd, sigma_d_3D_trpd, rho_d_3D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
+
+# TriPod monodisperse - density weighted average St
+m_trpd_mono_aver = pebbAcc(t, t_trpd, st_2D_trpd_aver, sigma_d_2D_trpd, rho_d_2D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
+
+# TriPod monodisperse - peak St
+m_trpd_mono_peak = pebbAcc(t, t_trpd, st_2D_trpd_peak, sigma_d_2D_trpd, rho_d_2D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
+
+
 ###################################
 ### Plot planetary growth track ###
 
@@ -251,6 +274,9 @@ plt.plot(t/(1e6*year), m_tp2/ME, color='red', label='tp2')
 plt.plot(t/(1e6*year), m_dp_poly/ME, color='black', label='dp-poly')
 plt.plot(t/(1e6*year), m_dp_mono_aver/ME, '--', color='black', label='dp-mono-aver')
 plt.plot(t/(1e6*year), m_dp_mono_peak/ME, ':', color='black', label='dp-mono-peak')
+plt.plot(t/(1e6*year), m_trpd_poly/ME, color='blue', label='trpd-poly')
+plt.plot(t/(1e6*year), m_trpd_mono_aver/ME, '--', color='blue', label='trpd-mono-aver')
+plt.plot(t/(1e6*year), m_trpd_mono_peak/ME, ':', color='blue', label='trpd-mono-peak')
 plt.legend()
 plt.xlim([pars.tcore/(year*1e6), pars.tend/(year*1e6)])
 plt.yscale('log')
@@ -268,6 +294,9 @@ np.save(f'pebbledata/mp_tp2_{dist:.1f}au.npy',m_tp2)
 np.save(f'pebbledata/mp_dp_poly_{dist:.1f}au.npy',m_dp_poly)
 np.save(f'pebbledata/mp_dp_mono_aver_{dist:.1f}au.npy',m_dp_mono_aver)
 np.save(f'pebbledata/mp_dp_mono_peak_{dist:.1f}au.npy',m_dp_mono_peak)
+np.save(f'pebbledata/mp_trpd_poly_{dist:.1f}au.npy',m_trpd_poly)
+np.save(f'pebbledata/mp_trpd_mono_aver_{dist:.1f}au.npy',m_trpd_mono_aver)
+np.save(f'pebbledata/mp_trpd_mono_peak_{dist:.1f}au.npy',m_trpd_mono_peak)
 
 ### Save some extra data ###
 
@@ -281,3 +310,9 @@ np.save('pebbledata/t_dp.npy',t_dp)
 np.save(f'pebbledata/st_peak_{dist:.1f}au.npy',st_2D_dp_peak[:,ir])
 np.save(f'pebbledata/st_aver_{dist:.1f}au.npy',st_2D_dp_aver[:,ir])
 np.save(f'pebbledata/sigma_d_dp_{dist:.1f}au.npy',sigma_d_2D_dp[:,ir])
+
+ir = np.abs(r_trpd - pars.Rcore).argmin()
+np.save('pebbledata/t_trpd.npy',t_trpd)
+np.save(f'pebbledata/st_peak_trpd_{dist:.1f}au.npy',st_2D_trpd_peak[:,ir])
+np.save(f'pebbledata/st_aver_trpd_{dist:.1f}au.npy',st_2D_trpd_aver[:,ir])
+np.save(f'pebbledata/sigma_d_dp_trpd_{dist:.1f}au.npy',sigma_d_2D_trpd[:,ir])
