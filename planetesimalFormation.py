@@ -50,6 +50,15 @@ sigma_g_2D_tp2=np.load('files_tp/sigma_gas_tp.npy')
 sigma_d_2D_tp2=np.load('files_tp/sigma_dust_tp.npy')
 size_2D_tp2=np.load('files_tp/size_tp.npy')
 
+# TriPod
+r_trpd=np.load('files_trpd/r_trpd.npy')
+t_trpd=np.load('files_trpd/t_trpd.npy')
+sigma_g_2D_trpd=np.load('files_trpd/sigma_gas_2D.npy')
+sigma_d_3D_trpd=np.load('files_trpd/Sigma_recon.npy')
+sigma_d_2D_trpd = sigma_d_3D_trpd.sum(-1)
+st_3D_trpd=np.load('files_trpd/St_recon.npy')
+st_2D_trpd_peak=np.load('files_trpd/st_3D.npy')[:,:,-1]
+
 ####################
 ### Calculate St ###
 
@@ -60,6 +69,7 @@ st_2D_tp2 = st_number(r_tp2,temp_2D_tp2,sigma_g_2D_tp2,size_2D_tp2)
 
 # Density-weighted average
 st_2D_dp_aver = np.sum(st_3D_dp * sigma_d_3D_dp, axis=2) / np.sum(sigma_d_3D_dp, axis=2)
+st_2D_trpd_aver = np.sum(st_3D_trpd * sigma_d_3D_trpd, axis=2) / np.sum(sigma_d_3D_trpd, axis=2)
 # Peak of size distribution
 ind = np.argmax(sigma_d_3D_dp, axis=2)
 st_2D_dp_peak = np.take_along_axis(st_3D_dp, ind[..., np.newaxis], axis=2).squeeze(axis=2)
@@ -110,6 +120,12 @@ pf_dp_aver_SI25 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2025(st_2D_dp_aver
 pf_dp_peak_SI24 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2024(st_2D_dp_peak, pars.alphaTurb))
 pf_dp_peak_SI25 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2025(st_2D_dp_peak))
 
+pf_trpd_aver_SI24 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2024(st_2D_trpd_aver, pars.alphaTurb))
+pf_trpd_aver_SI25 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2025(st_2D_trpd_aver))
+
+pf_trpd_peak_SI24 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2024(st_2D_trpd_peak, pars.alphaTurb))
+pf_trpd_peak_SI25 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2025(st_2D_trpd_peak))
+
 ############
 ### Plot ###
 
@@ -117,18 +133,26 @@ pf_dp_peak_SI25 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2025(st_2D_dp_peak
 plt.contour(r_tp2/au, t_tp2/(1e6*year), pf_tp2_SI25, levels=[0], colors='black', linewidths=1.4)
 plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_aver_SI25, levels=[0], colors='red', linewidths=1.4)
 plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_peak_SI25, levels=[0], colors='green', linewidths=1.4)
+plt.contour(r_trpd/au, t_trpd/(1e6*year), pf_trpd_aver_SI25, levels=[0], colors='blue', linewidths=1.4)
+plt.contour(r_trpd/au, t_trpd/(1e6*year), pf_trpd_peak_SI25, levels=[0], colors='orange', linewidths=1.4)
 plt.contour(r_tp2/au, t_tp2/(1e6*year), pf_tp2_SI24, levels=[0], colors='black', linewidths=0.7)
 plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_aver_SI24, levels=[0], colors='red', linewidths=0.7)
 plt.contour(r_dp/au, t_dp/(1e6*year), pf_dp_peak_SI24, levels=[0], colors='green', linewidths=0.7)
+plt.contour(r_trpd/au, t_trpd/(1e6*year), pf_trpd_aver_SI24, levels=[0], colors='blue', linewidths=0.7)
+plt.contour(r_trpd/au, t_trpd/(1e6*year), pf_trpd_peak_SI24, levels=[0], colors='orange', linewidths=0.7)
 # Create proxy artists
 line1 = mlines.Line2D([], [], color='black', linewidth=1.4, label='tp2-SI25')
 line2 = mlines.Line2D([], [], color='red', linewidth=1.4, label='dp-aver-SI25')
 line3 = mlines.Line2D([], [], color='green', linewidth=1.4, label='dp-peak-SI25')
-line4 = mlines.Line2D([], [], color='black', linewidth=0.7, label='tp2-SI24')
-line5 = mlines.Line2D([], [], color='red', linewidth=0.7, label='dp-aver-SI24')
-line6 = mlines.Line2D([], [], color='green', linewidth=0.7, label='dp-aver-SI24')
+line4 = mlines.Line2D([], [], color='blue', linewidth=1.4, label='trpd-aver-SI25')
+line5 = mlines.Line2D([], [], color='orange', linewidth=1.4, label='trpd-peak-SI25')
+line6 = mlines.Line2D([], [], color='black', linewidth=0.7, label='tp2-SI24')
+line7 = mlines.Line2D([], [], color='red', linewidth=0.7, label='dp-aver-SI24')
+line8 = mlines.Line2D([], [], color='green', linewidth=0.7, label='dp-aver-SI24')
+line9 = mlines.Line2D([], [], color='blue', linewidth=0.7, label='trpd-aver-SI24')
+line10 = mlines.Line2D([], [], color='orange', linewidth=0.7, label='trpd-aver-SI24')
 # Text
-plt.legend(handles=[line1, line2, line3, line4, line5, line6], frameon=False, fontsize=11)
+plt.legend(handles=[line1, line2, line3, line4, line5, line6, line7, line8, line9, line10], frameon=False, fontsize=11)
 plt.xlabel('Semimajor axis [au]')
 plt.ylabel('Time [Myr]')
 plt.title('Planetesimal formation regions')
@@ -143,13 +167,19 @@ np.save('planetesimaldata/t_tp2.npy',t_tp2)
 np.save('planetesimaldata/r_tp2.npy',r_tp2)
 np.save('planetesimaldata/t_dp.npy',t_dp)
 np.save('planetesimaldata/r_dp.npy',r_dp)
+np.save('planetesimaldata/t_trpd.npy',t_trpd)
+np.save('planetesimaldata/r_trpd.npy',r_trpd)
 
 np.save('planetesimaldata/pf_tp2_SI24.npy',pf_tp2_SI24)
 np.save('planetesimaldata/pf_dp_aver_SI24.npy',pf_dp_aver_SI24)
 np.save('planetesimaldata/pf_dp_peak_SI24.npy',pf_dp_peak_SI24)
+np.save('planetesimaldata/pf_trpd_aver_SI24.npy',pf_trpd_aver_SI24)
+np.save('planetesimaldata/pf_trpd_peak_SI24.npy',pf_trpd_peak_SI24)
 np.save('planetesimaldata/pf_tp2_SI25.npy',pf_tp2_SI25)
 np.save('planetesimaldata/pf_dp_aver_SI25.npy',pf_dp_aver_SI25)
 np.save('planetesimaldata/pf_dp_peak_SI25.npy',pf_dp_peak_SI25)
+np.save('planetesimaldata/pf_trpd_aver_SI25.npy',pf_trpd_aver_SI25)
+np.save('planetesimaldata/pf_trpd_peak_SI25.npy',pf_trpd_peak_SI25)
 
 #######################
 ### Save extra data ###
@@ -157,15 +187,18 @@ np.save('planetesimaldata/pf_dp_peak_SI25.npy',pf_dp_peak_SI25)
 np.save('planetesimaldata/st_tp2.npy',st_2D_tp2)
 np.save('planetesimaldata/st_aver.npy',st_2D_dp_aver)
 np.save('planetesimaldata/st_peak.npy',st_2D_dp_peak)
+np.save('planetesimaldata/st_aver_trpd.npy',st_2D_trpd_aver)
+np.save('planetesimaldata/st_peak_trpd.npy',st_2D_trpd_peak)
 
 np.save('planetesimaldata/Z_tp2.npy',sigma_d_2D_tp2/sigma_g_2D_tp2)
 np.save('planetesimaldata/Z_dp.npy',sigma_d_2D_dp/sigma_g_2D_dp)
+np.save('planetesimaldata/Z_trpd.npy',sigma_d_2D_trpd/sigma_g_2D_trpd)
 
-np.save('planetesimaldata/Zdiff_tp2_SI24.npy', sigma_d_2D_tp2/sigma_g_2D_tp2 - SI_Lim2024(st_2D_tp2, pars.alphaTurb))
-np.save('planetesimaldata/Zdiff_tp2_SI25.npy', sigma_d_2D_tp2/sigma_g_2D_tp2 - SI_Lim2025(st_2D_tp2))
+#np.save('planetesimaldata/Zdiff_tp2_SI24.npy', sigma_d_2D_tp2/sigma_g_2D_tp2 - SI_Lim2024(st_2D_tp2, pars.alphaTurb))
+#np.save('planetesimaldata/Zdiff_tp2_SI25.npy', sigma_d_2D_tp2/sigma_g_2D_tp2 - SI_Lim2025(st_2D_tp2))
 
-np.save('planetesimaldata/Zdiff_dp_aver_SI24.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2024(st_2D_dp_aver, pars.alphaTurb))
-np.save('planetesimaldata/Zdiff_dp_aver_SI25.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2025(st_2D_dp_aver))
+#np.save('planetesimaldata/Zdiff_dp_aver_SI24.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2024(st_2D_dp_aver, pars.alphaTurb))
+#np.save('planetesimaldata/Zdiff_dp_aver_SI25.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2025(st_2D_dp_aver))
 
-np.save('planetesimaldata/Zdiff_dp_peak_SI24.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2024(st_2D_dp_peak, pars.alphaTurb))
-np.save('planetesimaldata/Zdiff_dp_peak_SI25.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2025(st_2D_dp_peak))
+#np.save('planetesimaldata/Zdiff_dp_peak_SI24.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2024(st_2D_dp_peak, pars.alphaTurb))
+#np.save('planetesimaldata/Zdiff_dp_peak_SI25.npy', sigma_d_2D_dp/sigma_g_2D_dp - SI_Lim2025(st_2D_dp_peak))
