@@ -23,7 +23,7 @@ Rstar  = 3.096*c.R_sun.cgs.value
 Tstar = 4397
 
 # Protoplanetary disk parameters
-Mdot0 = 1.e-8*Msolar/year
+Mdot0 = 4.e-8*Msolar/year
                     # Initial disk accretion rate (determines initial
                     # gas surface density)
 Rout = 50.0*au      # Critical cut-off radius of surface density
