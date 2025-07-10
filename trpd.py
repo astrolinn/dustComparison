@@ -80,7 +80,7 @@ sim.writer.datadir = "data"
 sim.writer.overwrite = True
 ### Run TriPod
 sim.update()
-sim.run()
+# sim.run()
 
 #####################################################
 
@@ -106,11 +106,33 @@ log_mmax = np.log10(4./3. * np.pi * pars.rhop * pars.dustMaxSize**3)
 decades = np.ceil(log_mmax - log_mmin)
 Nm = int(decades * pars.Nmbpd) + 1
 m = np.logspace(log_mmin, log_mmax, num=Nm, base=10)
-a = (m/(4./3. * np.pi * pars.rhop))**(1/3)
+A = np.mean(m[1:]/m[:-1])
+mi = np.append(2./(A+1.)*m, A*2./(A+1.)*m[-1])
+
+ai = (mi/(4./3. * np.pi * pars.rhop))**(1/3)
+a  = (m/(4./3. * np.pi * pars.rhop))**(1/3)
 
 q = get_q(data.dust.Sigma, data.dust.s.min, data.dust.s.max)
-Sigma_recon = np.where(a[None,None,:]<data.dust.s.max[:,:,None], a[None,None,:]**(-q[:,:,None]+4), 0)
-Sigma_recon *= (data.dust.Sigma.sum(-1)/Sigma_recon.sum(-1))[:,:,None]
+
+mmax = 4./3.*np.pi*pars.rhop*data.dust.s.max**3.
+qmass = (-q+4.)/3.
+q4_mask = data.dust.Sigma[...,0][:,:,None]!=data.dust.Sigma[...,1][:,:,None]
+
+# Calculate size distribution where q!=4
+Sigma_recon  = np.where(np.logical_and(q4_mask, mi[None,None,1:]<=mmax[:,:,None]), 
+                       (mi[None,None,1:]**qmass[:,:,None] - mi[None,None,:-1]**qmass[:,:,None]), 0)
+Sigma_recon  = np.where(np.logical_and(q4_mask, np.logical_and(mi[None,None,:-1]<mmax[:,:,None], mi[None,None,1:]>mmax[:,:,None])), 
+                                       (mmax[:,:,None]**qmass[:,:,None] - mi[None,None,:-1]**qmass[:,:,None]), Sigma_recon)
+Sigma_recon *= np.where(q4_mask, 
+                        (data.dust.Sigma.sum(-1)[:,:,None]/np.ma.masked_where(~q4_mask, (mmax[:,:,None]**(qmass[:,:,None]) - mi.min()**(qmass[:,:,None])))), 1)
+
+# Calculate size distribution where q==4
+Sigma_recon  = np.where(np.logical_and(~q4_mask, mi[None,None,1:]<=mmax[:,:,None]), 
+                        np.log(mi[None,None,1:]/mi[None,None,:-1]), Sigma_recon)
+Sigma_recon  = np.where(np.logical_and(~q4_mask, np.logical_and(mi[None,None,:-1]<mmax[:,:,None], 
+                        mi[None,None,1:]>mmax[:,:,None])), np.log(mmax[:,:,None]/mi[None,None,:-1]), Sigma_recon)
+Sigma_recon *= np.where(~q4_mask, 
+                        (np.ones_like(Sigma_recon)*data.dust.Sigma.sum(-1)[:,:,None]/np.log(mmax[:,:,None]/mi.min())), 1)
 
 a_3d = np.ones_like(data.gas.mfp)[..., None] * a
 condition = a_3d < 2.25 * data.gas.mfp[:,:,None]
