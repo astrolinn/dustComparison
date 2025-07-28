@@ -145,6 +145,7 @@ St_recon[~condition] = 2.0/9.0 * np.pi * a_3d[~condition]**2 * pars.rhop / (mfp_
 H_recon = data.gas.Hp[:,:,None] / np.sqrt(1.0 + St_recon / data.dust.delta.vert[:,:,None])
 rho_recon = Sigma_recon / (np.sqrt(2 * np.pi) * H_recon)
 
+np.save('files_trpd/size_recon.npy', a_3d)
 np.save('files_trpd/Sigma_recon.npy', Sigma_recon)
 np.save('files_trpd/St_recon.npy', St_recon)
 np.save('files_trpd/rho_recon.npy', rho_recon)
