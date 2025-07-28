@@ -15,6 +15,8 @@ au = c.au.cgs.value
 sigma_sb = c.sigma_sb.cgs.value
 kB = c.k_B.cgs.value
 mH = c.u.cgs.value
+m_p    = c.m_p.cgs.value
+sig_h2 = 2e-15
 
 #####################################################
 
@@ -66,14 +68,17 @@ def viscosity(Omega,H):
 def st_number(r,temp,sigmaGas,size):
     """
     Calculates the Stokes number along the entire
-    time and semimajor axis grid
+    time and semimajor axis grid in the same way
+    as TwoPopPy
     """
     Omega = kepAngVel(r)
     Cs = soundSpeed(temp)
     Hg = gasScaleHeight(Cs, Omega)
-    rho_2D = sigmaGas/(np.sqrt(2*np.pi)*Hg)
-    st_2D = size*pars.rhop/(Hg*rho_2D)
-    return st_2D
+    rhoGas = sigmaGas/(np.sqrt(2*np.pi)*Hg)
+    mfp = pars.mu * m_p / (rhoGas * sig_h2)
+    epstein = np.pi / 2. * size * pars.rhop / sigmaGas
+    stokesI = np.pi * 2. / 9. * size**2. * pars.rhop / (mfp * sigmaGas)
+    return np.where((size > 9. / 4. * mfp), stokesI, epstein)
 
 # Pressure gradient
 
