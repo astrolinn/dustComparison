@@ -16,7 +16,6 @@ sigma_sb = c.sigma_sb.cgs.value
 kB = c.k_B.cgs.value
 mH = c.u.cgs.value
 m_p    = c.m_p.cgs.value
-sig_h2 = 2e-15
 
 #####################################################
 
@@ -75,7 +74,7 @@ def st_number(r,temp,sigmaGas,size):
     Cs = soundSpeed(temp)
     Hg = gasScaleHeight(Cs, Omega)
     rhoGas = sigmaGas/(np.sqrt(2*np.pi)*Hg)
-    mfp = pars.mu * m_p / (rhoGas * sig_h2)
+    mfp = pars.mu * m_p / (rhoGas * pars.sig_h)
     epstein = np.pi / 2. * size * pars.rhop / sigmaGas
     stokesI = np.pi * 2. / 9. * size**2. * pars.rhop / (mfp * sigmaGas)
     return np.where((size > 9. / 4. * mfp), stokesI, epstein)
