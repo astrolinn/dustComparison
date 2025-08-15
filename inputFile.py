@@ -40,10 +40,10 @@ mu = 2.34           # Mean molecular weight
 sig_h = 2e-15       # Collisional cross-section of hydrogen atom
 
 # Dust evolution parameters
-dustMinSize = 5e-6  # Minimum dust size on dust-grid in dustPy
+dustMinSize = 5e-6  # Minimum dust size on dust-grid in dustPy and TriPod
 dustMaxSize = 100   # Maximum dust size on dust-grid in dustPy
 allowDriftingParticles = True
-                    # Do or don't allow initially drifting particles in dustpy
+                    # Do or don't allow initially drifting particles
 Nmbpd = 7           # Number of dust fluids per decade in dustpy
 Rin_dust = 1.0*au   # Inner edge of semimajor axis grid used for dust ev.
 Redge_dust = 200*au # Outer edge of semimajor axis grid used for dust ev.
