@@ -80,7 +80,7 @@ sim.writer.datadir = "data"
 sim.writer.overwrite = True
 ### Run TriPod
 sim.update()
-# sim.run()
+sim.run()
 
 #####################################################
 
