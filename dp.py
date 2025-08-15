@@ -38,7 +38,6 @@ sim.ini.star.R = pars.Rstar
 sim.ini.star.T = pars.Tstar
 # Gas Parameters
 sim.ini.gas.alpha = pars.alpha
-sim.ini.gas.gamma = 1.0 # Adiabatic index, set to 1 for isothermal
 sim.ini.gas.mu = pars.mu*mH
 sim.ini.gas.SigmaExp = -pars.sigmaExp
 sim.ini.gas.SigmaRc = pars.Rout
@@ -46,7 +45,7 @@ sim.ini.gas.SigmaRc = pars.Rout
 sim.ini.dust.aIniMax = pars.a_0
 sim.ini.dust.allowDriftingParticles = pars.allowDriftingParticles
 sim.ini.dust.d2gRatio = pars.Z
-sim.ini.dust.vfrag = pars.vfrag
+sim.ini.dust.vFrag = pars.vfrag
 ### Initialize
 sim.initialize()
 ### Different dust diffusivity
