@@ -14,8 +14,7 @@ G = c.G.cgs.value
 au = c.au.cgs.value
 sigma_sb = c.sigma_sb.cgs.value
 kB = c.k_B.cgs.value
-mH = c.u.cgs.value
-m_p    = c.m_p.cgs.value
+m_p = c.m_p.cgs.value
 
 #####################################################
 
@@ -44,7 +43,7 @@ def midplaneTemp(r):
 # Sound speed
 
 def soundSpeed(T):
-    Cs = np.sqrt(kB*T/(pars.mu*mH))
+    Cs = np.sqrt(kB*T/(pars.mu*m_p))
     return Cs
 
 # Scale height of gas
