@@ -1,8 +1,11 @@
 # Simulate the growth of a single planet via pebble accretion, 
-# plot the results
+# stop the growth at the pebble isolation mass, plot the results
 # Dust evolution codes:
 # - TwoPopPy2
+# - TriPod
 # - DustPy
+#
+# For TriPod & DustPy:
 #   Polydisperse and Monodisperse pebble accretion
 #   2 choices for representative St in monodisperse case:
 #   - Density-weighted average
@@ -20,6 +23,8 @@ from commonFunctions import (
     gasScaleHeight, calc_dlnPdlnr, interp_t, 
     pebbleScaleHeight, midplaneDensity
 )
+import sys
+sys.path.insert(0, os.getcwd())
 
 year = 365.25*24*3600
 au = c.au.cgs.value
@@ -81,18 +86,6 @@ st_2D_trpd_aver = np.sum(st_3D_trpd * sigma_d_3D_trpd, axis=2) / np.sum(sigma_d_
 # Peak of size distribution
 ind = np.argmax(sigma_d_3D_dp, axis=2)
 st_2D_dp_peak = np.take_along_axis(st_3D_dp, ind[..., np.newaxis], axis=2).squeeze(axis=2)
-# Maximum size
-sorted_indices = np.argsort(st_3D_dp, axis=-1)
-st_sorted = np.take_along_axis(st_3D_dp, sorted_indices, axis=-1)
-sigma_sorted = np.take_along_axis(sigma_d_3D_dp, sorted_indices, axis=-1)
-cumsum_sigma = np.cumsum(sigma_sorted, axis=-1)
-sum_sigma = np.sum(sigma_sorted, axis=-1, keepdims=True)
-cdf = cumsum_sigma / sum_sigma 
-threshold_idx = np.argmax(cdf >= 0.999, axis=-1)
-t_idx, r_idx = np.meshgrid(np.arange(st_3D_dp.shape[0]),
-                           np.arange(st_3D_dp.shape[1]),
-                           indexing='ij')
-st_2D_dp_max = st_sorted[t_idx, r_idx, threshold_idx]
 
 ################################################
 ### Calculate midplane density for TwoPopPy2 ###
@@ -101,7 +94,7 @@ Hpebb_tp2 = pebbleScaleHeight(r_tp2, temp_2D_tp2, st_2D_tp2)
 rho_d_2D_tp2 = midplaneDensity(sigma_d_2D_tp2, Hpebb_tp2)
 
 ##########################################################
-### Function for calculating the pebble isolatino mass ###
+### Function for calculating the pebble isolation mass ###
 
 def calc_Miso(a, temp, dlnPdlnr):
     """
@@ -269,9 +262,6 @@ m_dp_mono_aver = pebbAcc(t, t_dp, st_2D_dp_aver, sigma_d_2D_dp, rho_d_2D_dp, r_d
 # DustPy monodisperse - peak St
 m_dp_mono_peak = pebbAcc(t, t_dp, st_2D_dp_peak, sigma_d_2D_dp, rho_d_2D_dp, r_dp, temp_2D_dp, sigma_g_2D_dp)
 
-# DustPy monodisperse - max St
-m_dp_mono_max = pebbAcc(t, t_dp, st_2D_dp_max, sigma_d_2D_dp, rho_d_2D_dp, r_dp, temp_2D_dp, sigma_g_2D_dp)
-
 # TriPod polydisperse
 m_trpd_poly = pebbAcc(t, t_trpd, st_3D_trpd, sigma_d_3D_trpd, rho_d_3D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
 
@@ -281,7 +271,6 @@ m_trpd_mono_aver = pebbAcc(t, t_trpd, st_2D_trpd_aver, sigma_d_2D_trpd, rho_d_2D
 # TriPod monodisperse - max St
 m_trpd_mono_max = pebbAcc(t, t_trpd, st_2D_trpd_max, sigma_d_2D_trpd, rho_d_2D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
 
-
 ###################################
 ### Plot planetary growth track ###
 
@@ -289,7 +278,6 @@ plt.plot(t/(1e6*year), m_tp2/ME, color='red', label='tp2')
 plt.plot(t/(1e6*year), m_dp_poly/ME, color='black', label='dp-poly')
 plt.plot(t/(1e6*year), m_dp_mono_aver/ME, '--', color='black', label='dp-mono-aver')
 plt.plot(t/(1e6*year), m_dp_mono_peak/ME, '-.', color='black', label='dp-mono-peak')
-plt.plot(t/(1e6*year), m_dp_mono_max/ME, ':', color='black', label='dp-mono-max')
 plt.plot(t/(1e6*year), m_trpd_poly/ME, color='blue', label='trpd-poly')
 plt.plot(t/(1e6*year), m_trpd_mono_aver/ME, '--', color='blue', label='trpd-mono-aver')
 plt.plot(t/(1e6*year), m_trpd_mono_max/ME, ':', color='blue', label='trpd-mono-peak')
@@ -310,7 +298,6 @@ np.save(f'pebbledata/mp_tp2_{dist:.1f}au.npy',m_tp2)
 np.save(f'pebbledata/mp_dp_poly_{dist:.1f}au.npy',m_dp_poly)
 np.save(f'pebbledata/mp_dp_mono_aver_{dist:.1f}au.npy',m_dp_mono_aver)
 np.save(f'pebbledata/mp_dp_mono_peak_{dist:.1f}au.npy',m_dp_mono_peak)
-np.save(f'pebbledata/mp_dp_mono_max_{dist:.1f}au.npy',m_dp_mono_max)
 np.save(f'pebbledata/mp_trpd_poly_{dist:.1f}au.npy',m_trpd_poly)
 np.save(f'pebbledata/mp_trpd_mono_aver_{dist:.1f}au.npy',m_trpd_mono_aver)
 np.save(f'pebbledata/mp_trpd_mono_max_{dist:.1f}au.npy',m_trpd_mono_max)
@@ -326,7 +313,6 @@ ir = np.abs(r_dp - pars.Rcore).argmin()
 np.save('pebbledata/t_dp.npy',t_dp)
 np.save(f'pebbledata/st_peak_{dist:.1f}au.npy',st_2D_dp_peak[:,ir])
 np.save(f'pebbledata/st_aver_{dist:.1f}au.npy',st_2D_dp_aver[:,ir])
-np.save(f'pebbledata/st_max_{dist:.1f}au.npy',st_2D_dp_max[:,ir])
 np.save(f'pebbledata/sigma_d_dp_{dist:.1f}au.npy',sigma_d_2D_dp[:,ir])
 
 ir = np.abs(r_trpd - pars.Rcore).argmin()
