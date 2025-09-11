@@ -73,7 +73,6 @@ sim.gas.update()
 sim.dust.Sigma[...] = std.dust.MRN_distribution(sim)
 sim.dust.update()
 ### Setup planet if included
-print(pars.include_planet)
 if pars.include_planet:
     sim.gas.alpha /= planet_profile(pars.profile, sim.grid.r, pars.Rp, pars.Mp_Mstar, sim.gas.Hp/sim.grid.r, pars.alpha)
     sim.gas.alpha.updater = None
