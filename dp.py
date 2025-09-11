@@ -4,7 +4,7 @@ from dustpy import Simulation
 from dustpy import std
 
 import inputFile as pars
-from commonFunctions import  midplaneTemp
+from commonFunctions import  midplaneTemp, refine_radial_local, planet_profile
 from viscAccDisc import viscAccDisc_grid
 
 #####################################################
@@ -15,10 +15,17 @@ mH = c.u.cgs.value
 
 # Set up semimajor axis and time grid
 
-ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
-ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
-ri = np.concatenate([ri, ri_outer])
-t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
+if(pars.refine_grid and pars.include_planet):
+    ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
+    ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
+    ri = np.concatenate([ri, ri_outer])
+    ri = refine_radial_local(ri, pars.Rp, num=5)
+    t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
+else:
+    ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
+    ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
+    ri = np.concatenate([ri, ri_outer])
+    t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
 
 #####################################################
 
@@ -65,6 +72,11 @@ sim.gas.Sigma[...] = sigma_gas_0
 sim.gas.update()
 sim.dust.Sigma[...] = std.dust.MRN_distribution(sim)
 sim.dust.update()
+### Setup planet if included
+print(pars.include_planet)
+if pars.include_planet:
+    sim.gas.alpha /= planet_profile(pars.profile, sim.grid.r, pars.Rp, pars.Mp_Mstar, sim.gas.Hp/sim.grid.r, pars.alpha)
+    sim.gas.alpha.updater = None
 ### Update and finalize all fields
 sim.update()
 sim.integrator._finalize()

@@ -4,9 +4,7 @@ from astropy import constants as c
 from twopoppy2 import twopoppy2 as tp2
 
 import inputFile as pars
-from commonFunctions import (
-    midplaneTemp
-)
+from commonFunctions import midplaneTemp, refine_radial_local, planet_profile
 from viscAccDisc import viscAccDisc_grid
 
 path = "files_tp"
@@ -22,10 +20,17 @@ mH = c.u.cgs.value
 
 # Set up semimajor axis and time grid
 
-ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
-ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
-ri = np.concatenate([ri, ri_outer])
-t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
+if(pars.refine_grid and pars.include_planet):
+    ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
+    ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
+    ri = np.concatenate([ri, ri_outer])
+    ri = refine_radial_local(ri, pars.Rp, num=5)
+    t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
+else:
+    ri = np.geomspace(pars.Rin_dust, pars.Redge_dust, pars.Rnr_dust+1)
+    ri_outer = np.concatenate([np.arange(pars.Rcoarse_int*(ri[-1]//pars.Rcoarse_int+1.), pars.Rgrid_out, pars.Rcoarse_int), [pars.Rgrid_out]])
+    ri = np.concatenate([ri, ri_outer])
+    t = np.linspace(pars.tstart, pars.tend, int(np.floor(pars.tend/pars.dt_dust)))
 
 #####################################################
 
@@ -36,7 +41,7 @@ m.R_star = pars.Rstar
 m.T_star = pars.Tstar
 m.T_gas = midplaneTemp(m.r)
 m.alpha_diff=pars.alphaTurb
-m.alpha_gas=pars.alpha
+m.alpha_gas=np.ones_like(m.r) * pars.alpha
 m.alpha_turb=pars.alphaTurb
 m.mu = pars.mu
 m.rho_s = pars.rhop
@@ -51,6 +56,9 @@ m.sigma_d = pars.Z * sigma_gas_0
 m.v_frag = pars.vfrag
 m.snapshots = t
 m.initialize()
+
+if pars.include_planet:
+    m.alpha_gas /= planet_profile(pars.profile, m.r, pars.Rp, pars.Mp_Mstar, m.hp/m.r, pars.alpha)
 
 # Run twopoppy2
 m.run()

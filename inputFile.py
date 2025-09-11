@@ -39,9 +39,16 @@ alphaTurb = 0.0001  # alpha governing turbulent diffusion
 mu = 2.34           # Mean molecular weight
 sig_h = 2e-15       # Collisional cross-section of hydrogen atom
 
+# planet gap parameters
+include_planet = True
+profile        = 'Duffell' # either "Duffell" or "Kanagawa" using the dustpylib routines
+refine_grid    = True      # whether to refine the grid around the planet, using the dustpylib routine
+Mp_Mstar       = 1e-3
+Rp             = 10.*au
+
 # Dust evolution parameters
-dustMinSize = 5e-6  # Minimum dust size on dust-grid in dustPy and TriPod
-dustMaxSize = 100   # Maximum dust size on dust-grid in dustPy
+dustMinSize = 5e-5  # Minimum dust size on dust-grid in dustPy and TriPod
+dustMaxSize = 20   # Maximum dust size on dust-grid in dustPy
 allowDriftingParticles = True
                     # Do or don't allow initially drifting particles
 Nmbpd = 7           # Number of dust fluids per decade in dustpy
@@ -50,7 +57,7 @@ Redge_dust = 200*au # Outer edge of semimajor axis grid used for dust ev.
 Rnr_dust = 150      # Nr of grid-points on semimajor axis grid used for dust ev.
 Rcoarse_int = 50*au # Coarse radial grid spacing in outer disk
 Rgrid_out = 1000*au # Outer edge of grid
-a_0 = 1.0e-5        # Initial size of dust grains
+a_0 = 1e-4          # Initial size of dust grains
 vfrag = 100.0       # Fragmentation velocity
 rhop = 1.0          # Internal density of dust grains
 
