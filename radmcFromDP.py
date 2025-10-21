@@ -42,7 +42,7 @@ for i in range(len(datadirs)):
     data.star.T = data.star.T[0]
 
     a    = data.dust.a
-    amax = 1.5*(np.where(np.cumsum(data.dust.Sigma, axis=-1)<0.999*np.sum(data.dust.Sigma, axis=-1)[:,None]*np.ones_like(a), a, 0), axis=1)[:-1].max()
+    amax = 1.5*np.where(np.cumsum(data.dust.Sigma, axis=-1)<0.999*np.sum(data.dust.Sigma, axis=-1)[:,None]*np.ones_like(a), a, 0, axis=1)[:-1].max()
 
     rt = radmc3d.Model(data)
     rt.phii_grid = np.array([0., 2.*np.pi])
