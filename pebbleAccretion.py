@@ -1,14 +1,14 @@
 # Simulate the growth of a single planet via pebble accretion, 
 # stop the growth at the pebble isolation mass, plot the results
 # Dust evolution codes:
-# - TwoPopPy2
-# - TriPod
+# - two-pop-py2
+# - TriPoDPy
 # - DustPy
 #
-# For TriPod & DustPy:
+# For TriPoDPy & DustPy:
 #   Polydisperse and Monodisperse pebble accretion
 #   2 choices for representative St in monodisperse case:
-#   - Density-weighted average
+#   - Density-weighted average St
 #   - Peak of density-vs-St distribution
 
 import os
@@ -52,7 +52,7 @@ sigma_d_3D_dp=np.load('files_dp/sigma_dust_3D.npy')
 sigma_d_2D_dp = sigma_d_3D_dp.sum(-1)
 st_3D_dp=np.load('files_dp/st_3D.npy')
 
-# TwoPopPy2
+# two-pop-py2
 r_tp2=np.load('files_tp/r_tp.npy')
 t_tp2=np.load('files_tp/time_tp.npy')
 temp_2D_tp2=np.load('files_tp/temp_tp.npy')
@@ -60,7 +60,7 @@ sigma_g_2D_tp2=np.load('files_tp/sigma_gas_tp.npy')
 sigma_d_2D_tp2=np.load('files_tp/sigma_dust_tp.npy')
 size_2D_tp2=np.load('files_tp/size_tp.npy')
 
-# TriPod
+# TriPoDPy
 r_trpd=np.load('files_trpd/r_trpd.npy')
 t_trpd=np.load('files_trpd/t_trpd.npy')
 temp_2D_trpd=np.load('files_trpd/temp_2D.npy')
@@ -75,10 +75,10 @@ st_2D_trpd_max=np.load('files_trpd/st_3D.npy')[:,:,-1]
 ####################
 ### Calculate St ###
 
-# Convert size to St for TwoPopPy2
+# Convert size to St for two-pop-py2
 st_2D_tp2 = st_number(r_tp2,temp_2D_tp2,sigma_g_2D_tp2,size_2D_tp2)
 
-# Obtain representative St for DustPy and tripod
+# Obtain representative St for DustPy and TriPoDPy
 
 # Density-weighted average
 st_2D_dp_aver = np.sum(st_3D_dp * sigma_d_3D_dp, axis=2) / np.sum(sigma_d_3D_dp, axis=2)
@@ -87,8 +87,8 @@ st_2D_trpd_aver = np.sum(st_3D_trpd * sigma_d_3D_trpd, axis=2) / np.sum(sigma_d_
 ind = np.argmax(sigma_d_3D_dp, axis=2)
 st_2D_dp_peak = np.take_along_axis(st_3D_dp, ind[..., np.newaxis], axis=2).squeeze(axis=2)
 
-################################################
-### Calculate midplane density for TwoPopPy2 ###
+##################################################
+### Calculate midplane density for two-pop-py2 ###
 
 Hpebb_tp2 = pebbleScaleHeight(r_tp2, temp_2D_tp2, st_2D_tp2)
 rho_d_2D_tp2 = midplaneDensity(sigma_d_2D_tp2, Hpebb_tp2)
@@ -99,7 +99,7 @@ rho_d_2D_tp2 = midplaneDensity(sigma_d_2D_tp2, Hpebb_tp2)
 def calc_Miso(a, temp, dlnPdlnr):
     """
     Calculates the pebble isolation mass at semimajor
-    axis a
+    axis a using eq. 10-11 from Bitsch et al. (2018)
     """
     alpha3 = 0.001
     Omega = kepAngVel(a)
@@ -245,12 +245,12 @@ def pebbAcc(t, tdustev, St, sigma_dust, rho_dust, rdustev, temp, sigma_gas):
 ### Compute the growth of a planet via pebble accretion ###
 
 # Set up time-array for pebble accretion
-# For now do until end of time-array for DustPy
+# (End time is taken to be the end of the time-array for DustPy)
 tend = t_dp[-1]
 num_points = int((tend - pars.tcore) / pars.dt_pebbAcc) + 1
 t = np.linspace(pars.tcore, tend, num_points)
 
-# TwoPopPy2
+# two-pop-py2
 m_tp2 = pebbAcc(t, t_tp2, st_2D_tp2, sigma_d_2D_tp2, rho_d_2D_tp2, r_tp2, temp_2D_tp2, sigma_g_2D_tp2)
 
 # DustPy polydisperse
@@ -262,31 +262,14 @@ m_dp_mono_aver = pebbAcc(t, t_dp, st_2D_dp_aver, sigma_d_2D_dp, rho_d_2D_dp, r_d
 # DustPy monodisperse - peak St
 m_dp_mono_peak = pebbAcc(t, t_dp, st_2D_dp_peak, sigma_d_2D_dp, rho_d_2D_dp, r_dp, temp_2D_dp, sigma_g_2D_dp)
 
-# TriPod polydisperse
+# TriPoDPy polydisperse
 m_trpd_poly = pebbAcc(t, t_trpd, st_3D_trpd, sigma_d_3D_trpd, rho_d_3D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
 
-# TriPod monodisperse - density weighted average St
+# TriPoDPy monodisperse - density weighted average St
 m_trpd_mono_aver = pebbAcc(t, t_trpd, st_2D_trpd_aver, sigma_d_2D_trpd, rho_d_2D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
 
-# TriPod monodisperse - max St
+# TriPoDPy monodisperse - max St (same as peak St)
 m_trpd_mono_max = pebbAcc(t, t_trpd, st_2D_trpd_max, sigma_d_2D_trpd, rho_d_2D_trpd, r_trpd, temp_2D_trpd, sigma_g_2D_trpd)
-
-###################################
-### Plot planetary growth track ###
-
-plt.plot(t/(1e6*year), m_tp2/ME, color='red', label='tp2')
-plt.plot(t/(1e6*year), m_dp_poly/ME, color='black', label='dp-poly')
-plt.plot(t/(1e6*year), m_dp_mono_aver/ME, '--', color='black', label='dp-mono-aver')
-plt.plot(t/(1e6*year), m_dp_mono_peak/ME, '-.', color='black', label='dp-mono-peak')
-plt.plot(t/(1e6*year), m_trpd_poly/ME, color='blue', label='trpd-poly')
-plt.plot(t/(1e6*year), m_trpd_mono_aver/ME, '--', color='blue', label='trpd-mono-aver')
-plt.plot(t/(1e6*year), m_trpd_mono_max/ME, ':', color='blue', label='trpd-mono-peak')
-plt.legend()
-plt.xlim([pars.tcore/(year*1e6), pars.tend/(year*1e6)])
-plt.yscale('log')
-plt.xlabel('Time [Myr]')
-plt.ylabel('Planetary mass [Mearth]')
-#plt.show()
 
 ###################################
 ### Save planetary growth track ###
@@ -302,7 +285,7 @@ np.save(f'pebbledata/mp_trpd_poly_{dist:.1f}au.npy',m_trpd_poly)
 np.save(f'pebbledata/mp_trpd_mono_aver_{dist:.1f}au.npy',m_trpd_mono_aver)
 np.save(f'pebbledata/mp_trpd_mono_max_{dist:.1f}au.npy',m_trpd_mono_max)
 
-### Save some extra data ###
+### Save some extra data (can be commented out) ###
 
 ir = np.abs(r_tp2 - pars.Rcore).argmin()
 np.save('pebbledata/t_tp2.npy',t_tp2)
@@ -320,3 +303,20 @@ np.save('pebbledata/t_trpd.npy',t_trpd)
 np.save(f'pebbledata/st_max_trpd_{dist:.1f}au.npy',st_2D_trpd_max[:,ir])
 np.save(f'pebbledata/st_aver_trpd_{dist:.1f}au.npy',st_2D_trpd_aver[:,ir])
 np.save(f'pebbledata/sigma_d_trpd_{dist:.1f}au.npy',sigma_d_2D_trpd[:,ir])
+
+###################################
+### Plot planetary growth track ###
+
+plt.plot(t/(1e6*year), m_tp2/ME, color='red', label='tp2')
+plt.plot(t/(1e6*year), m_dp_poly/ME, color='black', label='dp-poly')
+plt.plot(t/(1e6*year), m_dp_mono_aver/ME, '--', color='black', label='dp-mono-aver')
+plt.plot(t/(1e6*year), m_dp_mono_peak/ME, '-.', color='black', label='dp-mono-peak')
+plt.plot(t/(1e6*year), m_trpd_poly/ME, color='blue', label='trpd-poly')
+plt.plot(t/(1e6*year), m_trpd_mono_aver/ME, '--', color='blue', label='trpd-mono-aver')
+plt.plot(t/(1e6*year), m_trpd_mono_max/ME, ':', color='blue', label='trpd-mono-peak')
+plt.legend()
+plt.xlim([pars.tcore/(year*1e6), pars.tend/(year*1e6)])
+plt.yscale('log')
+plt.xlabel('Time [Myr]')
+plt.ylabel('Planetary mass [Mearth]')
+plt.show()
