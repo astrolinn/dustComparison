@@ -107,7 +107,7 @@ sim.dust.p.stick.save = False
 sim.dust.p.frag.save = False
 sim.dust.v.rel.tot.save = False
 ### Save statement
-sim.writer.datadir = "data"
+sim.writer.datadir = "data_dp"
 sim.writer.overwrite = True
 ### Run dustPy
 sim.update()
