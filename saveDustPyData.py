@@ -1,5 +1,4 @@
-#########################################
-### Save data from dustPy as numpy arrays
+# Save data from DustPy as numpy arrays
 
 import numpy as np
 import os
@@ -16,7 +15,7 @@ if not exists:
 ########################################
 # Find nr of saved snapshots from dustPy
 def findnrsave():
-    directory = 'data/'
+    directory = 'data_dp/'
     files = os.listdir(directory)
     pattern = re.compile(r'data(\d+)\.hdf5')
     indices = []
@@ -30,6 +29,7 @@ def findnrsave():
 ########################################
 
 lent = findnrsave()+1
+wrtr.datadir = "data_dp"
 data = wrtr.read.output(0)
 nrfluids = len(data.dust.Sigma[0,:])
 r = data.grid.r
