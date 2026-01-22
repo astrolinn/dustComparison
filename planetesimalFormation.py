@@ -1,19 +1,19 @@
 '''
 Calculate where and when the criteria for planetesimal formation
-via the streaming instability are met, plot the results
+via the streaming instability are met
 Dust evolution codes:
-- TwoPopPy2
-- TriPod
+- two-pop-py2
+- TriPoDPy
 - DustPy
-2 choices for representative St in DustPy & TriPod:
+2 choices for representative St in DustPy & TriPoDPy:
 - aver: Density-weighted average St
 - peak: Peak of density-vs-St distribution
 SI criteria:
 - YG05: Youdin & Goodman (2005) - criteria for linear unstratified SI
-- LI24: Lim et al. (2024) - 3D with turbulence, valid for limited St and alphaTurb
+- LI24: Lim et al. (2024) - 3D with forced turbulence, valid for limited St and alphaTurb
 - LI25: Lim et al. (2025) - 2D without turbulence, valid in large St regime
 
-Last modified: Aug 7, 2025
+Last modified: Jan 22, 2026
 Author: Linn Eriksson
 '''
 
@@ -55,7 +55,7 @@ rho_g_2D_dp = np.load('files_dp/rho_gas_2D.npy')
 rho_d_2D_dp = np.load('files_dp/rho_dust_3D.npy').sum(-1)
 st_3D_dp = np.load('files_dp/st_3D.npy')
 
-# TriPod
+# TriPoDPy
 r_trpd = np.load('files_trpd/r_trpd.npy')
 t_trpd = np.load('files_trpd/t_trpd.npy')
 sigma_g_2D_trpd = np.load('files_trpd/sigma_gas_2D.npy')
@@ -66,7 +66,7 @@ rho_d_2D_trpd = np.load('files_trpd/rho_recon.npy').sum(-1)
 st_3D_trpd = np.load('files_trpd/St_recon.npy')
 st_2D_trpd_peak = np.load('files_trpd/st_3D.npy')[:,:,-1]
 
-# TwoPopPy2
+# two-pop-py2
 r_tp2 = np.load('files_tp/r_tp.npy')
 t_tp2 = np.load('files_tp/time_tp.npy')
 temp_2D_tp2 = np.load('files_tp/temp_tp.npy')
@@ -77,10 +77,10 @@ size_2D_tp2 = np.load('files_tp/size_tp.npy')
 ####################
 ### Calculate St ###
 
-# Convert size to St for TwoPopPy2
+# Convert from size to St for two-pop-py
 st_2D_tp2 = st_number(r_tp2, temp_2D_tp2, sigma_g_2D_tp2, size_2D_tp2)
 
-# Obtain representative St for DustPy and TriPod
+# Obtain representative St for DustPy and TriPoDPy
 
 # Density-weighted average
 st_2D_dp_aver = np.sum(st_3D_dp * sigma_d_3D_dp, axis=2) / np.sum(sigma_d_3D_dp, axis=2)
@@ -93,7 +93,7 @@ st_2D_dp_peak = np.take_along_axis(st_3D_dp, ind[..., np.newaxis], axis=2).squee
 #####################
 ### Calculate rho ###
 
-# Calculate rho_dust and rho_gas for TwoPopPy
+# Calculate rho_dust and rho_gas for two-pop-py
 Omega = kepAngVel(r_tp2)
 Cs = soundSpeed(temp_2D_tp2)
 H = gasScaleHeight(Cs, Omega)
@@ -144,13 +144,18 @@ def planForm_YG05(rho_g, rho_d):
     pf = np.array((rho_d/rho_g >= 1), dtype=int)
     return pf
 
-######################################
-### Check where planetesimals form ###
+################################################
+### Check where planetesimals form
+### The output are 2d arrays of shape (t,r) that
+### contain ones (where the criteria are met)
+### and zeros (where the criteria are not met)
 
+# two-pop-py2
 pf_tp2_SI24 = planForm(sigma_d_2D_tp2/sigma_g_2D_tp2, SI_Lim2024(st_2D_tp2, pars.alphaTurb))
 pf_tp2_SI25 = planForm(sigma_d_2D_tp2/sigma_g_2D_tp2, SI_Lim2025(st_2D_tp2))
 pf_tp2_YG05 = planForm_YG05(rho_g_2D_tp2, rho_d_2D_tp2)
 
+# DustPy
 pf_dp_YG05 = planForm_YG05(rho_g_2D_dp, rho_d_2D_dp)
 
 pf_dp_aver_SI24 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2024(st_2D_dp_aver, pars.alphaTurb))
@@ -159,6 +164,7 @@ pf_dp_aver_SI25 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2025(st_2D_dp_aver
 pf_dp_peak_SI24 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2024(st_2D_dp_peak, pars.alphaTurb))
 pf_dp_peak_SI25 = planForm(sigma_d_2D_dp/sigma_g_2D_dp, SI_Lim2025(st_2D_dp_peak))
 
+# TriPoDPy
 pf_trpd_YG05 = planForm_YG05(rho_g_2D_trpd, rho_d_2D_trpd)
 
 pf_trpd_aver_SI24 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2024(st_2D_trpd_aver, pars.alphaTurb))
@@ -166,6 +172,45 @@ pf_trpd_aver_SI25 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2025(st_2D_t
 
 pf_trpd_peak_SI24 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2024(st_2D_trpd_peak, pars.alphaTurb))
 pf_trpd_peak_SI25 = planForm(sigma_d_2D_trpd/sigma_g_2D_trpd, SI_Lim2025(st_2D_trpd_peak))
+
+#################
+### Save data ###
+
+np.save('planetesimaldata/t_tp2.npy',t_tp2)
+np.save('planetesimaldata/r_tp2.npy',r_tp2)
+np.save('planetesimaldata/t_dp.npy',t_dp)
+np.save('planetesimaldata/r_dp.npy',r_dp)
+np.save('planetesimaldata/t_trpd.npy',t_trpd)
+np.save('planetesimaldata/r_trpd.npy',r_trpd)
+
+np.save('planetesimaldata/pf_tp2_YG05.npy',pf_tp2_YG05)
+np.save('planetesimaldata/pf_tp2_SI24.npy',pf_tp2_SI24)
+np.save('planetesimaldata/pf_tp2_SI25.npy',pf_tp2_SI25)
+
+np.save('planetesimaldata/pf_dp_YG05.npy',pf_dp_YG05)
+np.save('planetesimaldata/pf_dp_aver_SI24.npy',pf_dp_aver_SI24)
+np.save('planetesimaldata/pf_dp_peak_SI24.npy',pf_dp_peak_SI24)
+np.save('planetesimaldata/pf_dp_aver_SI25.npy',pf_dp_aver_SI25)
+np.save('planetesimaldata/pf_dp_peak_SI25.npy',pf_dp_peak_SI25)
+
+np.save('planetesimaldata/pf_trpd_YG05.npy',pf_trpd_YG05)
+np.save('planetesimaldata/pf_trpd_aver_SI24.npy',pf_trpd_aver_SI24)
+np.save('planetesimaldata/pf_trpd_peak_SI24.npy',pf_trpd_peak_SI24)
+np.save('planetesimaldata/pf_trpd_aver_SI25.npy',pf_trpd_aver_SI25)
+np.save('planetesimaldata/pf_trpd_peak_SI25.npy',pf_trpd_peak_SI25)
+
+#######################
+### Some extra data ###
+
+np.save('planetesimaldata/st_tp2.npy',st_2D_tp2)
+np.save('planetesimaldata/st_dp_aver.npy',st_2D_dp_aver)
+np.save('planetesimaldata/st_dp_peak.npy',st_2D_dp_peak)
+np.save('planetesimaldata/st_trpd_aver.npy',st_2D_trpd_aver)
+np.save('planetesimaldata/st_trpd_peak.npy',st_2D_trpd_peak)
+
+np.save('planetesimaldata/Z_tp2.npy',sigma_d_2D_tp2/sigma_g_2D_tp2)
+np.save('planetesimaldata/Z_dp.npy',sigma_d_2D_dp/sigma_g_2D_dp)
+np.save('planetesimaldata/Z_trpd.npy',sigma_d_2D_trpd/sigma_g_2D_trpd)
 
 #####################
 ### Outdated Plot ###
@@ -201,41 +246,4 @@ plt.xlim([1,200])
 plt.ylim([0,3])
 #plt.show()
 '''
-#################
-### Save data ###
 
-np.save('planetesimaldata/t_tp2.npy',t_tp2)
-np.save('planetesimaldata/r_tp2.npy',r_tp2)
-np.save('planetesimaldata/t_dp.npy',t_dp)
-np.save('planetesimaldata/r_dp.npy',r_dp)
-np.save('planetesimaldata/t_trpd.npy',t_trpd)
-np.save('planetesimaldata/r_trpd.npy',r_trpd)
-
-np.save('planetesimaldata/pf_tp2_YG05.npy',pf_tp2_YG05)
-np.save('planetesimaldata/pf_tp2_SI24.npy',pf_tp2_SI24)
-np.save('planetesimaldata/pf_tp2_SI25.npy',pf_tp2_SI25)
-
-np.save('planetesimaldata/pf_dp_YG05.npy',pf_dp_YG05)
-np.save('planetesimaldata/pf_dp_aver_SI24.npy',pf_dp_aver_SI24)
-np.save('planetesimaldata/pf_dp_peak_SI24.npy',pf_dp_peak_SI24)
-np.save('planetesimaldata/pf_dp_aver_SI25.npy',pf_dp_aver_SI25)
-np.save('planetesimaldata/pf_dp_peak_SI25.npy',pf_dp_peak_SI25)
-
-np.save('planetesimaldata/pf_trpd_YG05.npy',pf_trpd_YG05)
-np.save('planetesimaldata/pf_trpd_aver_SI24.npy',pf_trpd_aver_SI24)
-np.save('planetesimaldata/pf_trpd_peak_SI24.npy',pf_trpd_peak_SI24)
-np.save('planetesimaldata/pf_trpd_aver_SI25.npy',pf_trpd_aver_SI25)
-np.save('planetesimaldata/pf_trpd_peak_SI25.npy',pf_trpd_peak_SI25)
-
-#######################
-### Save extra data ###
-
-np.save('planetesimaldata/st_tp2.npy',st_2D_tp2)
-np.save('planetesimaldata/st_dp_aver.npy',st_2D_dp_aver)
-np.save('planetesimaldata/st_dp_peak.npy',st_2D_dp_peak)
-np.save('planetesimaldata/st_trpd_aver.npy',st_2D_trpd_aver)
-np.save('planetesimaldata/st_trpd_peak.npy',st_2D_trpd_peak)
-
-np.save('planetesimaldata/Z_tp2.npy',sigma_d_2D_tp2/sigma_g_2D_tp2)
-np.save('planetesimaldata/Z_dp.npy',sigma_d_2D_dp/sigma_g_2D_dp)
-np.save('planetesimaldata/Z_trpd.npy',sigma_d_2D_trpd/sigma_g_2D_trpd)
