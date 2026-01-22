@@ -1,3 +1,7 @@
+# Script for setting up, running and saving data from a 
+# TriPodPy simulation
+# Directly execute this script by typing: python trpd.py
+
 import numpy as np
 from astropy import constants as c
 import os
@@ -163,7 +167,8 @@ np.save('files_trpd/rho_recon.npy', rho_recon)
 
 '''
 #####################################################
-# Some reconstruction of the size distribution with provided functions
+# The size distribution can also be reconstructed using
+# the provided functions
 from tripod.utils.read_data import read_data
 data_1 = read_data(data="data", Na=100)
 Sigma_recon_1 = data_1.dust.Sigma_recon
