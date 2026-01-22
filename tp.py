@@ -1,3 +1,7 @@
+# Script for setting up, running and saving data from a 
+# two-pop-py simulation
+# Directly execute this script by typing: python tp.py
+
 import os
 import numpy as np
 from astropy import constants as c
@@ -34,7 +38,7 @@ else:
 
 #####################################################
 
-# Initialize twopoppy2
+# Initialize two-pop-py
 m = tp2.Twopoppy(grid=tp2.Grid(ri))
 m.M_star = pars.Mstar
 m.R_star = pars.Rstar
@@ -49,8 +53,8 @@ Mdot_gas_0,sigma_gas_0 = viscAccDisc_grid(t[0],m.r)
 M_disk = 2 * np.pi * np.trapz(sigma_gas_0 * m.r, m.r)
 m.sigma_g = sigma_gas_0
 m.allowDriftingParticles = pars.allowDriftingParticles
-m._amin = pars.dustMinSize #dustMinSize
-m._a_0 = pars.a_0 #dustMinSize
+m._amin = pars.dustMinSize
+m._a_0 = pars.a_0
 m._a_1 = pars.a_0
 m._floor = 1e-25
 m.sigma_d = pars.Z * sigma_gas_0
