@@ -1,4 +1,6 @@
 # Contains all input parameters for the simulation
+# The default parameters are the parameters of the
+# nominal simulation in Eriksson et al. (2026)
 # Note: cgs units
 
 import numpy as np
@@ -39,16 +41,17 @@ alphaTurb = 0.0001  # alpha governing turbulent diffusion
 mu = 2.34           # Mean molecular weight
 sig_h = 2e-15       # Collisional cross-section of hydrogen atom
 
-# planet gap parameters
-include_planet = True
-profile        = 'Duffell' # either "Duffell" or "Kanagawa" using the dustpylib routines
-refine_grid    = True      # whether to refine the grid around the planet, using the dustpylib routine
-Mp_Mstar       = 1e-3
-Rp             = 10.*au
+# Planet gap parameters
+include_planet = False     # Choose whether or not to include a gap-opening planet
+profile        = 'Duffell' # Either "Duffell" or "Kanagawa" using the dustpylib routines
+refine_grid    = True      # Whether to refine the grid around the planet, using the dustpylib routine
+Mp_Mstar       = 0.0009545942339693249
+                           # Mass of gap-opening planet in terms of the stellar mass
+Rp             = 10.*au    # Semimajor axis of gap-opening planet
 
 # Dust evolution parameters
 dustMinSize = 5e-5  # Minimum dust size on dust-grid in dustPy and TriPod
-dustMaxSize = 20   # Maximum dust size on dust-grid in dustPy
+dustMaxSize = 10    # Maximum dust size on dust-grid in dustPy
 allowDriftingParticles = True
                     # Do or don't allow initially drifting particles
 Nmbpd = 7           # Number of dust fluids per decade in dustpy
@@ -62,7 +65,7 @@ vfrag = 100.0       # Fragmentation velocity
 rhop = 1.0          # Internal density of dust grains
 
 # Pebble accretion parameters
-Mcore = 0.1*ME      # Initial core mass
+Mcore = 0.1*ME      # Initial core mass of pebble-accreting planet
 Rcore = 5*au        # Semimajor axis of core
 tcore = 1e5*year    # Time of core formation, start of pebble accretion
 dt_pebbAcc = 5e2*year
