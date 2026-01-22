@@ -91,7 +91,7 @@ sim.update()
 ### Time between saved snapshots
 sim.t.snapshots = t
 ### Save statement
-sim.writer.datadir = "files_trpd"
+sim.writer.datadir = "data_trpd"
 sim.writer.overwrite = True
 ### Run TriPod
 sim.update()
