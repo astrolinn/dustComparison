@@ -1,3 +1,9 @@
+# Script for setting up and running a DustPy simulation
+# Directly execute this script by typing: python dp.py
+# Note: after the simulation has finished, run
+# saveDustPyData.py to save the numpy arrays needed
+# for post-processing
+
 import numpy as np
 from astropy import constants as c
 from dustpy import Simulation
