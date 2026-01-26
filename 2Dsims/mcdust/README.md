@@ -23,3 +23,11 @@ export OMP_NUM_THREADS=num_threads
 ./alpha1.e-4 setups/alpha1.e-4/setup.par
 
 To run the alpha1.e-3 simulation. Replace the occurences of alpha1.e-4 with alpha.1e-3 in steps 3 and 5.
+
+The documentation of mcdust can be accessed with:
+
+[https://mcdust.readthedocs.io/](https://mcdust.readthedocs.io/)
+
+The github repository for mcdust can be accessed with
+
+[https://github.com/vicky1997/mcdust](https://github.com/vicky1997/mcdust)
