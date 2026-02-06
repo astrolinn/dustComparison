@@ -76,6 +76,12 @@ sigma_gas = m.data['sigma_g']
 sigma_dust = m.data['sigma_d']
 size = m.data['a_1']
 
+#get size distribution exponent
+q = np.ones_like(size) * 2.5
+q[size == m.data["a_dr"]] = 2.5
+q[size == m.data["a_fr"]] = 3.5
+q[size == m.data["a_df"]] = 3.75
+
 # Save data arrays
 np.save('files_tp/r_tp.npy',m.r)
 np.save('files_tp/time_tp.npy',time)
@@ -83,3 +89,4 @@ np.save('files_tp/temp_tp.npy',temp)
 np.save('files_tp/sigma_gas_tp.npy',sigma_gas)
 np.save('files_tp/sigma_dust_tp.npy',sigma_dust)
 np.save('files_tp/size_tp.npy',size)
+np.save('files_tp/q_tp.npy',q)
