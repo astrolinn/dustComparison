@@ -1,21 +1,35 @@
-This repository contains all scripts used for initializing, 
-running and post-processing the simulations in the dust evolution 
-comparison study by Eriksson et al. (2026). 
+# 1D radial simulations
+Scripts for setting up, running and post-processing the 1D radial simulations of Eriksson et al. (2026). 
 
-Required modules:
-  numpy,
-  astropy,
-  os,
-  dustpy,
-  twopoppy2_fork (https://github.com/astrolinn/twopoppy2_fork)
+### Codes
+- DustPy
+- TriPoDPy
+- two-pop-py
+---
+## Setting up and running the dust evolution codes
+All input variables that can be modified are found in the script inputFile.py
+#### DustPy
+- Install the DustPy code: https://github.com/stammler/dustpy
+- Run the script dp.py (the nominal simulation takes one to a few days)
+- If needed, the simulation can be restarted by running the script restartDustpy.py
+- Save the necessary data by running the script saveDustPyData.py, which saves data as numpy arrays and stores them inside the directory files_dp
+#### TriPoDPy (python implementation of TriPoD)
+- Install the TriPoDPy code: https://github.com/tripod-code/tripodpy (need correct version of dustpylib)
+- Run the script trpd.py (the nominal simulation takes a few minutes), necessary data is stored as numpy arrays and stores inside the directory files_trpd
+#### two-pop-py
+- Install the two-pop-py code, make sure to use our fork: https://github.com/astrolinn/twopoppy2_fork (note: twopoppy2 does not work with the newest python version, use version 3.11 or older)
+- Run the script tp.py (the nominal simulation takes a few seconds), necessary data is stored as numpy arrays and stores inside the directory files_tp
+---
+## Planetesimal formation
+Requires that data from the 3 dust evolution codes exist inside the directory (files_dp, files_trpd, files_tp)
+The script 
+- Run the script planetesimalFormation.py, data is stores as numpy arrays inside the directory planetesimaldata
+- 
 
-To set up twopoppy2_fork: 
-clone the git repo and execute
-  pip install -e .
-inside the local repository
- 
-NOTE: twopoppy2 does not work with the newest python version, 
-use version 3.11 or older
+
+
+Required modules: numpy, astropy, os
+
 
 ### Caluclating Observables
 #### Radio image  
