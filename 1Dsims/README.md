@@ -19,11 +19,11 @@ use version 3.11 or older
 
 ### Caluclating Observables
 #### Radio image  
-Run `create_radmc.py` to create the radmc models for the Dustpy,TriPoDPy and twopoppy simulations, then run radmc3d (`radmc3d mctherm && radmc3d image lambdarange 890 3100 nlam 2 sizeau 100 npixx 512 npixy 512`). Lastly make the plots with the `radio_im.py` script.
+Run `create_radmc.py` to create the radmc models for the DustPy, TriPoDPy and twopoppy simulations, then run radmc3d (`radmc3d mctherm && radmc3d image lambdarange 890 3100 nlam 2 sizeau 100 npixx 512 npixy 512`). Lastly, make the plots with the `radio_im.py` script.
 ##### Requirements
   - dustpylib
   - radmc3d
 #### Fluxes and radii
-script that creates the plots for the radii and fluxes
+The script `observables.py` creates the plots for the radii and fluxes
 ##### Requirements
   - dipsy (available at: https://github.com/NIcolas-Kaufmann/dipsy)
