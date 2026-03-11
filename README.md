@@ -4,6 +4,8 @@ This repository contains all scripts used for initializing, running, and post-pr
 
 *Turning the knobs on dust evolution: Comparing codes, parameters and their effects on planet formation and disk observables*
 
+For questions or inquiries, contact Linn Eriksson: linn94eriksson@gmail.com<br>
+
 ---
 
 ## 1D Radial Simulations
@@ -33,4 +35,10 @@ This repository contains all scripts used for initializing, running, and post-pr
 
 ### Setup
 - Power-law disk where gas evolution is omitted
+
+## Citation
+
+If you use code from this repository in a publication, please cite:
+
+Eriksson et al. (2026), *Turning the knobs on dust evolution: Comparing codes, parameters and their effects on planet formation and disk observables*.
 
