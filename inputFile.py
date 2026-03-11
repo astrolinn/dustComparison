@@ -52,7 +52,7 @@ Rp             = 10.*au    # Semimajor axis of gap-opening planet
 # Dust evolution parameters
 dustMinSize = 5e-5  # Minimum dust size on dust-grid in dustPy and TriPod
 dustMaxSize = 10    # Maximum dust size on dust-grid in dustPy
-allowDriftingParticles = True
+allowDriftingParticles = False
                     # Do or don't allow initially drifting particles
 Nmbpd = 7           # Number of dust fluids per decade in dustpy
 Rin_dust = 1.0*au   # Inner edge of semimajor axis grid used for dust ev.
