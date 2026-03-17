@@ -1,0 +1,147 @@
+<comment>
+problem   = Keplerian disk 
+
+<job>
+problem_id  = disk      # problem ID: basename of output filenames
+
+<output1>
+file_type   = hdf5      # VTK data dump
+variable    = prim      #
+dt          = 628.3185307179586     # time increment between outputs
+orbital_system = true
+log_output  = 1
+Nfiles      = 200
+xdmf        = false
+
+<output2>
+file_type   = hst       # History data dump
+dt          = 628.3185307179586    # time increment between outputs
+log_output  = 1
+Nfiles      = 200
+
+<output3>
+file_type   = hdf5       # History data dump
+dt          = 628.3185307179586       # time increment between outputs
+variable    = uov  # (or user_out_var)
+ghost_zones = false
+log_output  = 1
+Nfiles      = 200
+xdmf        = false
+
+<output4>
+file_type   = rst      # VTK data dump
+dt          = 628.3185307179586    # time increment between outputs
+log_output  = 1
+Nfiles      = 20
+
+<time>
+cfl_number  = 0.3       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1        # cycle limit
+tlim        = 1256637.0614359172 # time limit
+integrator  = rk2       # time integration algorithm
+xorder      = 2         # order of spatial reconstruction
+ncycle_out  = 1         # interval for stdout summary info
+
+<mesh>
+nx1         = 512       # Number of zones in X1-direction
+x1min       = 5.0       # minimum value of X1
+x1max       = 50.0      # maximum value of X1
+ix1_bc      = user      # Inner-X1 boundary condition flag
+ox1_bc      = user      # Outer-X1 boundary condition flag
+x1rat       = 1.0045073642544624 # non-uniform grid ratio
+
+nx2         = 256       # Number of zones in X2-direction
+x2min       = 1.3707963267948966  # minimum value of X2
+x2max       = 1.7707963267948965  # maximum value of X2
+ix2_bc      = user      # Inner-X2 boundary condition flag
+ox2_bc      = user      # Outer-X2 boundary condition flag
+
+nx3         = 1.0            # Number of zons in X3-direction
+x3min       = 0.0            # minimum value of X3
+x3max       = 6.2831853071795862  # maximum value of X3
+ix3_bc      = periodic       # Inner-X3 boundary condition flag
+ox3_bc      = periodic       # Outer-X3 boundary condition flag
+
+refinement  = None
+
+<meshblock>
+nx1         = 16
+nx2         = 16
+nx3         = 1
+
+<hydro>
+gamma           = 1.43        # gamma = C_p/C_v
+iso_sound_speed = 0.1        # isothermal sound speed
+dfloor          = 1e-10
+pfloor          = 1e-20
+sfloor          = 1e-10
+
+<orbital_advection>
+OAorder    = 0        # 0: w/o OA, 1: w/ OA(1st), 2: w/ OA(2nd)
+
+<problem>
+GM          = 1.0        # stellar mass parameter
+ms_in_msol  = 1.0
+md_in_ms    = 0.0508772  # disk mass in stellar masses
+r0_in_au    = 1.0        # reference radius: sets unit length and rotating frame radius
+rc_in_au    = 50.0       # characteristic disk radius in astronomical units (Lynden-Bell & Pringe, 1974, profile)
+hr_at_au    = 0.02888263612710895  # disk aspect ratio at 1 astronomical unit
+beta_Sig    = -1.       # column density power law exponent (Lynden-Bell & Pringe, 1974, profile)
+beta_T      = -0.5       # temperature power law exponent
+mue         = 2.34       # mean molecular weight
+perturb     = 0.0        # relative magnitude of initial perturbation to disk structure
+
+nu_iso          = 0     # use viscosity?
+nu_scalar_iso_1 = 1e-3   # particle size diffusivity (alpha viscosity model)
+alpha_gas       = 0.     # actual alpha viscosity - determines gas viscosity nu=alpha_gas*cs*H
+
+power_law   = true
+isotherm    = false      # if true: enforce isothermal EOS by resetting the specific internal energy in every timestep
+therm_relax = false      # if true: add thermal relaxation source term: either betacool or dustcool
+beta_cool   = false      # if true: beta cooling on local timescale tcool*OmegaKepler
+dust_cool   = false      # if true: beta cooling on local dust-gas thermal accomodation timescale
+t_cool      = 0.01       # cooling timescale in units of the local Keplerian timescale (only for betacool==true)
+
+coag        = true       # if true: dust coagulation with the TriPoD method !!! requires --nscalars=3 !!!
+mom_coag    = false      # if true: momentum coagulation
+Benitez     = false      # Initialize with eq. velocities from Benítez-Llambay, Krapp, & Pessah (2019) 
+v_frag      = 100.       # fragmentation velocity for dust coagulation
+dust_amax   = 1e-4       # maximum grain size of dust size distribution with Nscalar species in cm
+dust_amin   = 5e-5       # minimum grain size of dust size distribution with Nscalar species in cm
+alpha_turb  = 1e-3       # alpha turbulence parameter - determines relative particle velocities
+dust_d_ini  = 1e-3       # dust diffusivity for initial condition (ONLY determines Hd(n,t=0))
+dust_q      = -3.5       # power law of dust size distribution
+dust_rho_m  = 1.         # dust material density
+eps_ini     = 1e-2       # total initial dust-to-gas ratio
+eps_floor   = 1e-30      # floor value for local dust-to-gas ratio
+eps_profile = false
+use_alpha_av = false
+
+R_int       = 7.5        # seperating radius in au inner/outer disk for tracer concentrations
+C_in        = 1e-15.     # tracer concentration inner disk
+C_out       = 1.         # tracer concentration outer disk
+
+infall      = false      # simulate infall as in Kuznetsova et al. (2022) - also enforces isothermal EOS
+M_in        = 1e-6       # infall rate (solar masses per year)
+R_in        = 30.        # inner edge of infall zone (in au)
+R_out       = 60.        # outer edge of infall zone
+a_in        = 1e-4       # size of infalling particles (cm)
+
+planet      = false       # add the gravitational potential of a planet at R/R_code=1. 
+planet_power= false       # if true: use a power law series as potential, else: Plummer potential
+ind_term    = false       # indirect term of gravitational potential
+Mp_s        = 0.000954508915064  # planetary mass in stellar masses
+r_sm        = 0.5        # smoothing length/power-law-limit in planetary Hill radii
+
+damping     = false
+dsize       = 0.04
+t_damp      = 0.001
+
+<dust>
+drag_method = 2nd-implicit
+DustFeedback_Flag = 0
+Diffusion_Flag = 1
+Momentum_Diffusion_Flag = 0
+nu_dust_ = 1e-3
+dffloor_1 = 1e-30
+dffloor_2 = 1e-30
