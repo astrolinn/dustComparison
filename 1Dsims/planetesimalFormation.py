@@ -86,9 +86,24 @@ st_2D_tp2 = st_number(r_tp2, temp_2D_tp2, sigma_g_2D_tp2, size_2D_tp2)
 st_2D_dp_aver = np.sum(st_3D_dp * sigma_d_3D_dp, axis=2) / np.sum(sigma_d_3D_dp, axis=2)
 st_2D_trpd_aver = np.sum(st_3D_trpd * sigma_d_3D_trpd, axis=2) / np.sum(sigma_d_3D_trpd, axis=2)
 
-# Peak of size distribution
+# Peak of size distribution (note: only using argmax like in version 1 results in the peak jumping back and forth due to finite mass resolution)
 ind = np.argmax(sigma_d_3D_dp, axis=2)
-st_2D_dp_peak = np.take_along_axis(st_3D_dp, ind[..., np.newaxis], axis=2).squeeze(axis=2)
+ind = np.clip(ind, 1, sigma_d_3D_dp.shape[2]-2) # avoid edges
+i0 = ind
+i_minus = ind - 1
+i_plus = ind + 1
+log_st = np.log(st_3D_dp) # log space 
+log_sigma = np.log(sigma_d_3D_dp)
+x1 = np.take_along_axis(log_st, i_minus[..., None], axis=2).squeeze(-1)
+x2 = np.take_along_axis(log_st, i0[..., None], axis=2).squeeze(-1)
+x3 = np.take_along_axis(log_st, i_plus[..., None], axis=2).squeeze(-1)
+y1 = np.take_along_axis(log_sigma, i_minus[..., None], axis=2).squeeze(-1)
+y2 = np.take_along_axis(log_sigma, i0[..., None], axis=2).squeeze(-1)
+y3 = np.take_along_axis(log_sigma, i_plus[..., None], axis=2).squeeze(-1)
+den = (y1 - 2*y2 + y3) # vertex of parabola
+delta = 0.5 * (y1 - y3) / den
+log_st_peak = x2 + delta * (x3 - x2)
+st_2D_dp_peak = np.exp(log_st_peak)
 
 #####################
 ### Calculate rho ###
